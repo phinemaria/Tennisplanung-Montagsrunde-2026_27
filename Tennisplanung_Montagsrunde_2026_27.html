@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Montagsrunde Tennisplanung 2026/27</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(51, 65, 85, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            position: relative;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+            position: relative;
+        }
+
+        .content {
+            padding: 16px 12px;
+        }
+
+        .months-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .months-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .month-section {
+            margin-bottom: 16px;
+        }
+
+        .month-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+        }
+
+        .weeks-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .week-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease;
+        }
+
+        .week-card:hover {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .week-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .week-kw {
+            font-size: 13px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .week-date-full {
+            font-size: 13px;
+            color: #475569;
+            margin-top: 3px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .week-date-monday {
+            font-size: 14px;
+            font-weight: 800;
+            color: #0ea5e9;
+            margin-top: 3px;
+            line-height: 1.2;
+        }
+
+        .player-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 4px;
+            margin-bottom: 6px;
+        }
+
+        .player-row {
+            display: grid;
+            grid-template-columns: 28px 1fr;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .player-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .availability-btn {
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 18px;
+            transition: all 0.2s;
+            background: white;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 0;
+            min-height: 32px;
+            height: 32px;
+            line-height: 1;
+        }
+
+        .availability-btn:hover {
+            transform: scale(1.05);
+            border-color: #cbd5e1;
+        }
+
+        .availability-btn.dot {
+            color: #16a34a;
+            background: #dcfce7;
+            border-color: #86efac;
+        }
+
+        .availability-btn.dot:hover {
+            background: #bbf7d0;
+            border-color: #4ade80;
+        }
+
+        .availability-btn.x {
+            color: #3a0f0f;
+            background: #fef2f2;
+            border-color: #fecaca;
+            font-size: 11px;
+        }
+
+        .availability-btn.x:hover {
+            background: #fee2e2;
+            border-color: #fca5a5;
+            color: #5a1a1a;
+        }
+        }
+
+        .game-type {
+            margin-top: 8px !important;
+            padding: 8px 6px !important;
+            border-radius: 4px !important;
+            font-weight: 900 !important;
+            font-size: 13px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+            height: 28px !important;
+            line-height: 1 !important;
+            text-align: center !important;
+        }
+
+        .game-type.doppel {
+            background: #dcfce7;
+            color: #16a34a;
+            border: 1px solid #86efac;
+        }
+
+        .game-type.einzel {
+            background: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fcd34d;
+        }
+
+        .game-type.empty {
+            background: #f1f5f9;
+            color: #94a3b8;
+            border: 1px solid #e2e8f0;
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin: 12px 0;
+            padding: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-box {
+            width: 32px;
+            height: 32px;
+            border: 1.5px solid;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .legend-text {
+            font-size: 13px;
+            color: #475569;
+        }
+
+        .footer {
+            padding: 15px 20px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            font-size: 12px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .weeks-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .header {
+                padding: 25px 20px;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .player-row {
+                grid-template-columns: 35px 1fr;
+                gap: 8px;
+            }
+
+            .month-title {
+                font-size: 18px;
+                margin-bottom: 16px;
+            }
+
+            button.action-btn {
+                padding: 9px 16px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const INITIAL_DATA = {
+            "Oktober 2026": [
+                { kw: "KW 41", weekRange: "05.10.2026 - 11.10.2026", monday: "Montag, 05.10.2026", availabilities: { AB: "🟡", RP: "🟡", DG: "❌", UW: "❌", DR: "🟡" } },
+                { kw: "KW 42", weekRange: "12.10.2026 - 18.10.2026", monday: "Montag, 12.10.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "🟡" } },
+                { kw: "KW 43", weekRange: "19.10.2026 - 25.10.2026", monday: "Montag, 19.10.2026", availabilities: { AB: "🟡", RP: "🟡", DG: "❌", UW: "❌", DR: "❌" } },
+            ],
+            "November 2026": [
+                { kw: "KW 44", weekRange: "26.10.2026 - 01.11.2026", monday: "Montag, 26.10.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                { kw: "KW 45", weekRange: "02.11.2026 - 08.11.2026", monday: "Montag, 02.11.2026", availabilities: { AB: "🟡", RP: "🟡", DG: "❌", UW: "❌", DR: "❌" } },
+                { kw: "KW 46", weekRange: "09.11.2026 - 15.11.2026", monday: "Montag, 09.11.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "🟡" } },
+                { kw: "KW 47", weekRange: "16.11.2026 - 22.11.2026", monday: "Montag, 16.11.2026", availabilities: { AB: "🟡", RP: "🟡", DG: "❌", UW: "❌", DR: "🟡" } },
+                { kw: "KW 48", weekRange: "23.11.2026 - 29.11.2026", monday: "Montag, 23.11.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+            ],
+            "Dezember 2026": [
+                { kw: "KW 49", weekRange: "30.11.2026 - 06.12.2026", monday: "Montag, 30.11.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                { kw: "KW 50", weekRange: "07.12.2026 - 13.12.2026", monday: "Montag, 07.12.2026", availabilities: { AB: "🟡", RP: "🟡", DG: "❌", UW: "❌", DR: "❌" } },
+                { kw: "KW 51", weekRange: "14.12.2026 - 20.12.2026", monday: "Montag, 14.12.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "🟡" } },
+                { kw: "KW 52", weekRange: "21.12.2026 - 27.12.2026", monday: "Montag, 21.12.2026", availabilities: { AB: "🟡", RP: "🟡", DG: "❌", UW: "❌", DR: "❌" } },
+                { kw: "KW 53", weekRange: "28.12.2026 - 03.01.2027", monday: "Montag, 28.12.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "🟡" } },
+            ],
+            "Januar 2027": [
+                { kw: "KW 53", weekRange: "31.12.2026 - 03.01.2027", monday: "Montag, 31.12.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                { kw: "KW 01", weekRange: "04.01.2027 - 10.01.2027", monday: "Montag, 04.01.2027", availabilities: { AB: "🟡", RP: "🟡", DG: "❌", UW: "❌", DR: "❌" } },
+                { kw: "KW 02", weekRange: "11.01.2027 - 17.01.2027", monday: "Montag, 11.01.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "🟡" } },
+                { kw: "KW 03", weekRange: "18.01.2027 - 24.01.2027", monday: "Montag, 18.01.2027", availabilities: { AB: "🟡", RP: "🟡", DG: "❌", UW: "❌", DR: "🟡" } },
+                { kw: "KW 04", weekRange: "25.01.2027 - 31.01.2027", monday: "Montag, 25.01.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+            ],
+            "Februar 2027": [
+                { kw: "KW 05", weekRange: "01.02.2027 - 07.02.2027", monday: "Montag, 01.02.2027", availabilities: { AB: "🟡", RP: "🟡", DG: "❌", UW: "❌", DR: "❌" } },
+                { kw: "KW 06", weekRange: "08.02.2027 - 14.02.2027", monday: "Montag, 08.02.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "🟡" } },
+                { kw: "KW 07", weekRange: "15.02.2027 - 21.02.2027", monday: "Montag, 15.02.2027", availabilities: { AB: "🟡", RP: "🟡", DG: "❌", UW: "❌", DR: "❌" } },
+                { kw: "KW 08", weekRange: "22.02.2027 - 28.02.2027", monday: "Montag, 22.02.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "🟡" } },
+            ],
+            "März 2027": [
+                { kw: "KW 09", weekRange: "01.03.2027 - 07.03.2027", monday: "Montag, 01.03.2027", availabilities: { AB: "🟡", RP: "🟡", DG: "❌", UW: "❌", DR: "❌" } },
+                { kw: "KW 10", weekRange: "08.03.2027 - 14.03.2027", monday: "Montag, 08.03.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "🟡" } },
+                { kw: "KW 11", weekRange: "15.03.2027 - 21.03.2027", monday: "Montag, 15.03.2027", availabilities: { AB: "🟡", RP: "🟡", DG: "❌", UW: "❌", DR: "❌" } },
+                { kw: "KW 12", weekRange: "22.03.2027 - 28.03.2027", monday: "Montag, 22.03.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "🟡" } },
+                { kw: "KW 13", weekRange: "29.03.2027 - 04.04.2027", monday: "Montag, 29.03.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+            ],
+            "April 2027": [
+                { kw: "KW 14", weekRange: "05.04.2027 - 11.04.2027", monday: "Montag, 05.04.2027", availabilities: { AB: "🟡", RP: "🟡", DG: "❌", UW: "❌", DR: "🟡" } },
+                { kw: "KW 15", weekRange: "12.04.2027 - 18.04.2027", monday: "Montag, 12.04.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+                { kw: "KW 16", weekRange: "19.04.2027 - 25.04.2027", monday: "Montag, 19.04.2027", availabilities: { AB: "🟡", RP: "🟡", DG: "❌", UW: "❌", DR: "❌" } },
+                { kw: "KW 17", weekRange: "26.04.2027 - 02.05.2027", monday: "Montag, 26.04.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "🟡" } },
+            ]
+        };
+
+        const PLAYERS = {
+            AB: "Axel Borchers",
+            RP: "Robert Papendick",
+            DG: "Dirk Grothmann",
+            UW: "Ulrich Wegener",
+            DR: "Dietmar Reule"
+        };
+
+        function TennisPlanner() {
+            const [data, setData] = useState(() => {
+                // Gespeicherte Daten laden, falls vorhanden
+                const saved = localStorage.getItem('tennisData');
+                return saved ? JSON.parse(saved) : INITIAL_DATA;
+            });
+
+            const [log, setLog] = useState(() => {
+                const savedLog = localStorage.getItem('tennisLog');
+                return savedLog ? JSON.parse(savedLog) : [];
+            });
+
+            const [showLog, setShowLog] = useState(false);
+
+            useEffect(() => {
+                localStorage.setItem('tennisData', JSON.stringify(data));
+            }, [data]);
+
+            useEffect(() => {
+                localStorage.setItem('tennisLog', JSON.stringify(log));
+            }, [log]);
+
+            const toggleAvailability = (month, weekIdx, player) => {
+                const states = ["❌", "🟡"];
+                const current = data[month][weekIdx].availabilities[player];
+                const currentIdx = states.indexOf(current);
+                const nextIdx = (currentIdx + 1) % states.length;
+                const newValue = states[nextIdx];
+
+                // Log-Eintrag erstellen
+                const now = new Date();
+                const timestamp = now.toLocaleString('de-DE');
+                const week = data[month][weekIdx];
+                const logEntry = {
+                    timestamp,
+                    player: PLAYERS[player] || player,
+                    from: current,
+                    to: newValue,
+                    week: week.kw,
+                    date: week.monday
+                };
+
+                setLog(prev => [logEntry, ...prev]);
+
+                setData(prev => ({
+                    ...prev,
+                    [month]: prev[month].map((week, idx) =>
+                        idx === weekIdx
+                            ? {
+                                ...week,
+                                availabilities: {
+                                    ...week.availabilities,
+                                    [player]: newValue
+                                }
+                            }
+                            : week
+                    )
+                }));
+            };
+
+            const calculateGameType = (availabilities) => {
+                const confirmCount = Object.values(availabilities).filter(v => v === "🟡").length;
+                const total = confirmCount;
+
+                if (total >= 4) return "Doppel";
+                if (confirmCount >= 2) return "Einzel";
+                return "";
+            };
+
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>🟡 Montagsrunde Tennisplanung</h1>
+                        <p>Saison 2026/2027 • Verfügbarkeitsplanung</p>
+                    </div>
+
+                    <div className="content">
+
+                        <div className="legend">
+                            <div className="legend-item">
+                                <div className="legend-box" style={{ color: '#10b981', borderColor: '#10b981' }}>🟡</div>
+                                <span className="legend-text">Bestätigt</span>
+                            </div>
+                            <div className="legend-item">
+                                <div className="legend-box" style={{ color: '#ef4444', borderColor: '#ef4444' }}>❌</div>
+                                <span className="legend-text">Nicht verfügbar</span>
+                            </div>
+                        </div>
+
+                        <div className="months-container">
+                            {Object.entries(data).map(([month, weeks]) => (
+                            <div key={month} className="month-section">
+                                <div className="month-title">{month}</div>
+                                <div className="weeks-grid">
+                                    {weeks.map((week, idx) => (
+                                        <div key={idx} className="week-card">
+                                            <div className="week-header">
+                                                <div>
+                                                    <div className="week-kw">{week.kw}</div>
+                                                    <div className="week-date-full">{week.weekRange}</div>
+                                                    <div className="week-date-monday">{week.monday}</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="player-grid">
+                                                {Object.keys(PLAYERS).map(player => (
+                                                    <div key={player} className="player-row">
+                                                        <div className="player-name">{player}</div>
+                                                        <button
+                                                            className={`availability-btn ${week.availabilities[player] === '🟡' ? 'dot' : 'x'}`}
+                                                            onClick={() => toggleAvailability(month, idx, player)}
+                                                            title={`${PLAYERS[player]} - ${week.monday}`}
+                                                        >
+                                                            {week.availabilities[player] || '−'}
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className={`game-type ${calculateGameType(week.availabilities).toLowerCase()}`} style={{display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, width: '100%', height: '28px', textAlign: 'center', fontSize: '13px'}}>
+                                                {calculateGameType(week.availabilities) || '−'}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                        </div>
+                    </div>
+
+                    <div style={{marginTop: '30px', paddingTop: '20px', borderTop: '2px solid #e2e8f0'}}>
+                        <button 
+                            onClick={() => setShowLog(!showLog)}
+                            style={{
+                                padding: '10px 20px',
+                                backgroundColor: '#3b82f6',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontWeight: 700,
+                                fontSize: '14px',
+                                marginBottom: '15px'
+                            }}
+                        >
+                            {showLog ? '📋 Log ausblenden' : '📋 Änderungslog anzeigen'} ({log.length})
+                        </button>
+
+                        {showLog && (
+                            <div style={{
+                                backgroundColor: '#f8fafc',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '8px',
+                                padding: '15px',
+                                maxHeight: '400px',
+                                overflowY: 'auto'
+                            }}>
+                                {log.length === 0 ? (
+                                    <div style={{color: '#64748b', textAlign: 'center', padding: '20px'}}>
+                                        Noch keine Änderungen protokolliert
+                                    </div>
+                                ) : (
+                                    <div>
+                                        {log.map((entry, idx) => (
+                                            <div key={idx} style={{
+                                                padding: '10px',
+                                                borderBottom: '1px solid #e2e8f0',
+                                                fontSize: '13px',
+                                                fontFamily: 'monospace'
+                                            }}>
+                                                <strong>{entry.timestamp}</strong> | 
+                                                <strong style={{marginLeft: '8px'}}>{entry.player}</strong> | 
+                                                <span style={{marginLeft: '8px'}}>{entry.from} → {entry.to}</span> | 
+                                                <span style={{marginLeft: '8px', color: '#64748b'}}>{entry.week} ({entry.date})</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="footer">
+                        💾 Änderungen werden automatisch gespeichert
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<TennisPlanner />, document.getElementById('root'));
+    </script>
+</body>
+</html>
