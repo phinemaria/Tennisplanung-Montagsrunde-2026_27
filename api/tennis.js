@@ -1,5 +1,4 @@
-import fs from 'fs';
-import path from 'path';
+const fs = require('fs');
 
 const dataFile = '/tmp/tennis-data.json';
 
@@ -60,7 +59,7 @@ function readData() {
       return JSON.parse(content);
     }
   } catch (error) {
-    console.log('Error reading data file, using initial data');
+    console.log('Read error, using initial data');
   }
   return getInitialData();
 }
@@ -70,19 +69,20 @@ function writeData(data) {
     fs.writeFileSync(dataFile, JSON.stringify(data, null, 2), 'utf-8');
     return true;
   } catch (error) {
-    console.error('Error writing data:', error);
+    console.error('Write error:', error);
     return false;
   }
 }
 
-export default function handler(req, res) {
-  // CORS headers
+module.exports = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
+  res.setHeader('Content-Type', 'application/json');
+
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    res.status(200).end();
+    return;
   }
 
   try {
@@ -90,18 +90,20 @@ export default function handler(req, res) {
 
     if (action === 'load') {
       const data = readData();
-      return res.status(200).json(data);
+      res.status(200).json(data);
+      return;
     }
 
     if (action === 'save' && req.method === 'POST') {
       const data = req.body;
       const success = writeData(data);
-      return res.status(200).json({ success });
+      res.status(200).json({ success });
+      return;
     }
 
-    return res.status(400).json({ error: 'Invalid action' });
+    res.status(400).json({ error: 'Invalid action' });
   } catch (error) {
     console.error('API Error:', error);
-    return res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
-}
+};
