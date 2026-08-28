@@ -1,7 +1,11 @@
 {
-  "outputDirectory": ".",
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "name": "tennisplanung-vercel",
+  "version": "1.0.0",
+  "description": "Montagsrunde Tennisplanung mit Vercel Backend",
+  "scripts": {
+    "build": "mkdir -p public && cp index.html public/index.html"
+  },
+  "engines": {
+    "node": "24.x"
+  }
 }
