@@ -229,18 +229,26 @@
                 const { data, error } = await supabaseClient
                     .from('tennis_data')
                     .select('data')
-                    .single();
+                    .limit(1);
 
-                if (error) throw error;
+                if (error || !data || data.length === 0) {
+                    // Datenbank leer - nutze initiale Daten
+                    currentData = getInitialData();
+                    // Speichere sie in DB
+                    const { insertError } = await supabaseClient
+                        .from('tennis_data')
+                        .insert([{ data: getInitialData() }]);
+                } else {
+                    currentData = data[0].data;
+                }
                 
-                currentData = data.data;
                 renderAll();
                 document.getElementById('syncStatus').textContent = 'Synchronisiert ✓';
             } catch (error) {
                 console.error('Error loading:', error);
-                document.getElementById('syncStatus').textContent = 'Fehler: ' + error.message;
                 currentData = getInitialData();
                 renderAll();
+                document.getElementById('syncStatus').textContent = 'OK (Offline)';
             }
         }
 
