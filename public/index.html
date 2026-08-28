@@ -247,18 +247,27 @@
                 document.getElementById('syncStatus').textContent = 'Lädt...';
                 await initSupabase();
                 
+                // Lade ALLE Reihen
                 const { data, error } = await supabaseClient
                     .from('tennis_data')
-                    .select('data')
+                    .select('*')
+                    .order('id', { ascending: true })
                     .limit(1);
 
-                if (error || !data || data.length === 0) {
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    // Keine Daten - erstelle neue Reihe
                     currentData = getInitialData();
                     const { insertError } = await supabaseClient
                         .from('tennis_data')
-                        .insert([{ data: currentData }]);
+                        .insert([{ data: currentData, updated_at: new Date().toISOString() }]);
+                    if (insertError) throw insertError;
                 } else {
+                    // Daten vorhanden - nutze sie
                     currentData = data[0].data;
+                    // Speichere auch die Reihen-ID für spätere Updates
+                    window.currentRowId = data[0].id;
                 }
                 
                 renderAll();
@@ -267,7 +276,7 @@
                 console.error('Error:', error);
                 currentData = getInitialData();
                 renderAll();
-                document.getElementById('syncStatus').textContent = 'OK (Offline)';
+                document.getElementById('syncStatus').textContent = 'Fehler: ' + error.message;
             }
         }
 
@@ -371,16 +380,25 @@
             
             try {
                 document.getElementById('syncStatus').textContent = 'Speichert...';
+                
+                // Nutze die richtige Reihen-ID
+                const rowId = window.currentRowId || 1;
                 const { error } = await supabaseClient
                     .from('tennis_data')
-                    .update({ data: currentData })
-                    .eq('id', 1);
+                    .update({ 
+                        data: currentData,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', rowId);
                 
                 if (!error) {
                     document.getElementById('syncStatus').textContent = 'Synchronisiert ✓';
+                } else {
+                    throw error;
                 }
             } catch (error) {
                 console.error('Save error:', error);
+                document.getElementById('syncStatus').textContent = 'Fehler: ' + error.message;
             }
         }
 
