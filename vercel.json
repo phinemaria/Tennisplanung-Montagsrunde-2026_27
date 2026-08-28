@@ -1,11 +1,6 @@
 {
-  "name": "tennisplanung-vercel",
-  "version": "1.0.0",
-  "description": "Montagsrunde Tennisplanung mit Vercel Backend",
-  "scripts": {
-    "build": "echo 'Build complete'"
-  },
-  "engines": {
-    "node": "18.x"
-  }
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
