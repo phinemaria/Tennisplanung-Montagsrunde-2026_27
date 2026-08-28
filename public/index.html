@@ -439,29 +439,24 @@
                             <div className="legend">
                                 <div className="legend-item"><span>🟡 Bestätigt</span></div>
                                 <div className="legend-item"><span>❌ Nicht verfügbar</span></div>
-                                <button className="changelog-btn" onClick={() => setShowChangelog(!showChangelog)}>
-                                    📋 Änderungshistorie
-                                </button>
                             </div>
 
-                            {showChangelog && (
-                                <div className="changelog-section">
-                                    <h3>📋 Änderungshistorie (letzte 100 Einträge)</h3>
-                                    {logs.length === 0 ? (
-                                        <div className="empty-logs">Noch keine Änderungen</div>
-                                    ) : (
-                                        logs.map((log, idx) => (
-                                            <div key={idx} className="log-entry">
-                                                <div className="log-time">{formatTime(log.timestamp)}</div>
-                                                <div className="log-change">
-                                                    <span className="log-player">{log.player}</span>
-                                                    {log.month} {log.week}: {log.oldStatus} → {log.newStatus}
-                                                </div>
+                            <div className="changelog-section">
+                                <h3>📋 Änderungshistorie (letzte 100 Einträge)</h3>
+                                {logs.length === 0 ? (
+                                    <div className="empty-logs">Noch keine Änderungen</div>
+                                ) : (
+                                    logs.map((log, idx) => (
+                                        <div key={idx} className="log-entry">
+                                            <div className="log-time">{formatTime(log.timestamp)}</div>
+                                            <div className="log-change">
+                                                <span className="log-player">{log.player}</span>
+                                                {log.month} {log.week}: {log.oldStatus} → {log.newStatus}
                                             </div>
-                                        ))
-                                    )}
-                                </div>
-                            )}
+                                        </div>
+                                    ))
+                                )}
+                            </div>
 
                             <div className="months-container">
                                 {Object.entries(data).map(([month, weeks]) => (
