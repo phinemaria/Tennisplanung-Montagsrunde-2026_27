@@ -159,8 +159,12 @@
         const SUPABASE_URL = 'https://wjayzhuztdaqznnixekc.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqYXl6aHV6dGRhcXpubml4ZWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5MTczODcsImV4cCI6MjEwMzQ5MzM4N30.DOheTcTjNAXhDgN-gfg1EjK_ThYRuccSiSJVS-uiR1Q';
         
-        const { createClient } = window.supabase;
-        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        let supabaseClient = null;
+        
+        async function initSupabase() {
+            const { createClient } = window.supabase;
+            supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+        }
 
         const PLAYERS = { AB: "AB", RP: "RP", DG: "DG", UW: "UW", DR: "DR" };
         let currentData = null;
@@ -220,7 +224,9 @@
             try {
                 document.getElementById('syncStatus').textContent = 'Lädt...';
                 
-                const { data, error } = await supabase
+                await initSupabase();
+                
+                const { data, error } = await supabaseClient
                     .from('tennis_data')
                     .select('data')
                     .single();
@@ -328,7 +334,7 @@
             
             try {
                 document.getElementById('syncStatus').textContent = 'Speichert...';
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('tennis_data')
                     .update({ data: currentData })
                     .eq('id', 1);
