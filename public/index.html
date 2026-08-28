@@ -239,21 +239,10 @@
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
         }
         .changelog-modal {
-            display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .changelog-modal.open {
-            display: flex;
-        }
-        .changelog-content {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             background: white;
             border-radius: 12px;
             max-width: 600px;
@@ -261,6 +250,8 @@
             max-height: 80vh;
             overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            display: block;
         }
         .changelog-header {
             background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
@@ -524,27 +515,25 @@
                         </div>
                     </div>
 
-                    <div className={`changelog-modal ${showChangelog ? 'open' : ''}`}>
-                        <div className="changelog-content">
-                            <div className="changelog-header">
-                                <h2>📋 Änderungshistorie</h2>
-                                <button className="close-btn" onClick={() => setShowChangelog(false)}>×</button>
-                            </div>
-                            <div className="changelog-list">
-                                {logs.length === 0 ? (
-                                    <div className="empty-logs">Noch keine Änderungen</div>
-                                ) : (
-                                    logs.map((log, idx) => (
-                                        <div key={idx} className="log-entry">
-                                            <div className="log-time">{formatTime(log.timestamp)}</div>
-                                            <div className="log-change">
-                                                <span className="log-player">{log.player}</span>
-                                                hat {log.month} {log.week}: {log.oldStatus} → {log.newStatus} geändert
-                                            </div>
+                    <div className="changelog-modal">
+                        <div className="changelog-header">
+                            <h2>📋 Änderungshistorie</h2>
+                            <button className="close-btn" onClick={() => setShowChangelog(false)}>×</button>
+                        </div>
+                        <div className="changelog-list">
+                            {logs.length === 0 ? (
+                                <div className="empty-logs">Noch keine Änderungen</div>
+                            ) : (
+                                logs.map((log, idx) => (
+                                    <div key={idx} className="log-entry">
+                                        <div className="log-time">{formatTime(log.timestamp)}</div>
+                                        <div className="log-change">
+                                            <span className="log-player">{log.player}</span>
+                                            hat {log.month} {log.week}: {log.oldStatus} → {log.newStatus} geändert
                                         </div>
-                                    ))
-                                )}
-                            </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </>
