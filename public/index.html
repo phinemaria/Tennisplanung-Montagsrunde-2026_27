@@ -238,54 +238,20 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
         }
-        .changelog-modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            border-radius: 12px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-            display: block;
-        }
-        .changelog-header {
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            color: white;
+        .changelog-section {
+            margin: 20px 30px;
             padding: 20px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
         }
-        .changelog-header h2 {
-            margin: 0;
-            font-size: 20px;
-        }
-        .close-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 0;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .changelog-list {
-            padding: 20px;
+        .changelog-section h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #1e293b;
         }
         .log-entry {
-            padding: 12px;
+            padding: 10px 0;
             border-bottom: 1px solid #e2e8f0;
             font-size: 13px;
         }
@@ -299,7 +265,6 @@
         .log-player {
             font-weight: 700;
             color: #3b82f6;
-            margin-right: 8px;
         }
         .log-change {
             color: #1e293b;
@@ -307,7 +272,7 @@
         }
         .empty-logs {
             text-align: center;
-            padding: 40px 20px;
+            padding: 20px;
             color: #64748b;
         }
     </style>
@@ -474,10 +439,29 @@
                             <div className="legend">
                                 <div className="legend-item"><span>🟡 Bestätigt</span></div>
                                 <div className="legend-item"><span>❌ Nicht verfügbar</span></div>
-                                <button className="changelog-btn" onClick={() => setShowChangelog(true)}>
+                                <button className="changelog-btn" onClick={() => setShowChangelog(!showChangelog)}>
                                     📋 Änderungshistorie
                                 </button>
                             </div>
+
+                            {showChangelog && (
+                                <div className="changelog-section">
+                                    <h3>📋 Änderungshistorie (letzte 100 Einträge)</h3>
+                                    {logs.length === 0 ? (
+                                        <div className="empty-logs">Noch keine Änderungen</div>
+                                    ) : (
+                                        logs.map((log, idx) => (
+                                            <div key={idx} className="log-entry">
+                                                <div className="log-time">{formatTime(log.timestamp)}</div>
+                                                <div className="log-change">
+                                                    <span className="log-player">{log.player}</span>
+                                                    {log.month} {log.week}: {log.oldStatus} → {log.newStatus}
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            )}
 
                             <div className="months-container">
                                 {Object.entries(data).map(([month, weeks]) => (
@@ -515,27 +499,6 @@
                         </div>
                     </div>
 
-                    <div className="changelog-modal">
-                        <div className="changelog-header">
-                            <h2>📋 Änderungshistorie</h2>
-                            <button className="close-btn" onClick={() => setShowChangelog(false)}>×</button>
-                        </div>
-                        <div className="changelog-list">
-                            {logs.length === 0 ? (
-                                <div className="empty-logs">Noch keine Änderungen</div>
-                            ) : (
-                                logs.map((log, idx) => (
-                                    <div key={idx} className="log-entry">
-                                        <div className="log-time">{formatTime(log.timestamp)}</div>
-                                        <div className="log-change">
-                                            <span className="log-player">{log.player}</span>
-                                            hat {log.month} {log.week}: {log.oldStatus} → {log.newStatus} geändert
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
                 </>
             );
         }
