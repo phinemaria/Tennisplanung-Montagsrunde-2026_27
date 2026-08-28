@@ -49,13 +49,8 @@
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
-            user-select: none;
         }
-        .changelog-header h3 {
-            margin: 0;
-            color: #333;
-            font-size: 18px;
-        }
+        .changelog-header h3 { margin: 0; font-size: 16px; color: #333; }
         .toggle-btn {
             background: #3b82f6;
             color: white;
@@ -63,30 +58,26 @@
             padding: 6px 12px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
         }
-        .toggle-btn:hover {
-            background: #2563eb;
-        }
+        .toggle-btn:hover { background: #2563eb; }
         .changelog-list {
             display: none;
             margin-top: 15px;
             max-height: 300px;
             overflow-y: auto;
         }
-        .changelog-list.open {
-            display: block;
-        }
+        .changelog-list.open { display: block; }
         .log-entry {
-            padding: 10px 0;
+            padding: 8px 0;
             border-bottom: 1px solid #ddd;
-            font-size: 14px;
+            font-size: 13px;
         }
         .log-entry:last-child { border-bottom: none; }
-        .log-time { color: #666; font-size: 12px; }
+        .log-time { color: #666; font-size: 11px; }
         .log-player { color: #3b82f6; font-weight: bold; }
-        .log-change { color: #333; margin-top: 3px; }
+        .log-change { color: #333; margin-top: 2px; }
         .months-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -178,7 +169,7 @@
                 <button class="toggle-btn" id="toggleBtn">Öffnen</button>
             </div>
             <div class="changelog-list" id="changelog">
-                <p>Lädt...</p>
+                <p style="color: #999;">Noch keine Änderungen</p>
             </div>
         </div>
 
@@ -192,26 +183,14 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqYXl6aHV6dGRhcXpubml4ZWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5MTczODcsImV4cCI6MjEwMzQ5MzM4N30.DOheTcTjNAXhDgN-gfg1EjK_ThYRuccSiSJVS-uiR1Q';
         
         let supabaseClient = null;
-        
+        let changelogOpen = false;
+        const PLAYERS = { AB: "AB", RP: "RP", DG: "DG", UW: "UW", DR: "DR" };
+        let currentData = null;
+        let logs = [];
+
         async function initSupabase() {
             const { createClient } = window.supabase;
             supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
-        }
-
-        let changelogOpen = false;
-
-        function toggleChangelog() {
-            const list = document.getElementById('changelog');
-            const btn = document.getElementById('toggleBtn');
-            changelogOpen = !changelogOpen;
-            
-            if (changelogOpen) {
-                list.classList.add('open');
-                btn.textContent = 'Zuklappen';
-            } else {
-                list.classList.remove('open');
-                btn.textContent = 'Öffnen';
-            }
         }
 
         function getInitialData() {
@@ -267,7 +246,6 @@
         async function loadData() {
             try {
                 document.getElementById('syncStatus').textContent = 'Lädt...';
-                
                 await initSupabase();
                 
                 const { data, error } = await supabaseClient
@@ -276,12 +254,10 @@
                     .limit(1);
 
                 if (error || !data || data.length === 0) {
-                    // Datenbank leer - nutze initiale Daten
                     currentData = getInitialData();
-                    // Speichere sie in DB
                     const { insertError } = await supabaseClient
                         .from('tennis_data')
-                        .insert([{ data: getInitialData() }]);
+                        .insert([{ data: currentData }]);
                 } else {
                     currentData = data[0].data;
                 }
@@ -289,7 +265,7 @@
                 renderAll();
                 document.getElementById('syncStatus').textContent = 'Synchronisiert ✓';
             } catch (error) {
-                console.error('Error loading:', error);
+                console.error('Error:', error);
                 currentData = getInitialData();
                 renderAll();
                 document.getElementById('syncStatus').textContent = 'OK (Offline)';
@@ -319,11 +295,7 @@
                 `;
             }).join('');
             
-            if (!html) {
-                document.getElementById('changelog').innerHTML = '<p style="color:#999;">Noch keine Änderungen</p>';
-            } else {
-                document.getElementById('changelog').innerHTML = html;
-            }
+            document.getElementById('changelog').innerHTML = html || '<p style="color:#999;">Noch keine Änderungen</p>';
         }
 
         function renderMonths() {
@@ -366,6 +338,20 @@
             document.getElementById('monthsContainer').innerHTML = html;
         }
 
+        function toggleChangelog() {
+            const list = document.getElementById('changelog');
+            const btn = document.getElementById('toggleBtn');
+            changelogOpen = !changelogOpen;
+            
+            if (changelogOpen) {
+                list.classList.add('open');
+                btn.textContent = 'Zuklappen';
+            } else {
+                list.classList.remove('open');
+                btn.textContent = 'Öffnen';
+            }
+        }
+
         async function toggle(month, weekIdx, player) {
             const states = ['❌', '🟡'];
             const current = currentData[month][weekIdx].availabilities[player];
@@ -391,11 +377,11 @@
                     .update({ data: currentData })
                     .eq('id', 1);
                 
-                if (error) throw error;
-                document.getElementById('syncStatus').textContent = 'Synchronisiert ✓';
+                if (!error) {
+                    document.getElementById('syncStatus').textContent = 'Synchronisiert ✓';
+                }
             } catch (error) {
                 console.error('Save error:', error);
-                document.getElementById('syncStatus').textContent = 'Fehler beim Speichern';
             }
         }
 
