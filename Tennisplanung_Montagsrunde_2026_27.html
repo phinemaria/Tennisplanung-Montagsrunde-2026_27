@@ -102,7 +102,6 @@
 
         .token-setup {
             padding: 40px 30px;
-            text-align: center;
             background: #f8fafc;
             border: 2px dashed #cbd5e1;
             margin: 30px;
@@ -161,6 +160,16 @@
             margin-top: 15px;
             padding-top: 15px;
             border-top: 1px solid #e2e8f0;
+            line-height: 1.6;
+        }
+
+        .token-note a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .token-note a:hover {
+            text-decoration: underline;
         }
 
         .content {
@@ -400,7 +409,6 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        const GITHUB_REPO = "phinemaria/phinemaria.github.io";
         const DATA_FILE = "tennis-data.json";
 
         const INITIAL_DATA = {
@@ -460,40 +468,40 @@
 
         function TennisPlanner() {
             const [token, setToken] = useState(() => localStorage.getItem('githubToken') || '');
+            const [repoName, setRepoName] = useState(() => localStorage.getItem('githubRepo') || '');
             const [data, setData] = useState(INITIAL_DATA);
-            const [syncStatus, setSyncStatus] = useState('idle'); // idle, syncing, synced, error
+            const [syncStatus, setSyncStatus] = useState('idle');
             const [errorMsg, setErrorMsg] = useState('');
             const [successMsg, setSuccessMsg] = useState('');
             const tokenInputRef = useRef(null);
+            const repoInputRef = useRef(null);
 
-            // Laden beim Start
             useEffect(() => {
-                if (token) {
+                if (token && repoName) {
                     loadFromGitHub();
                 }
             }, []);
 
-            // Auto-save nach Änderungen
             useEffect(() => {
-                if (token && syncStatus !== 'syncing') {
+                if (token && repoName && syncStatus !== 'syncing') {
                     const timer = setTimeout(() => {
                         saveToGitHub();
                     }, 1000);
                     return () => clearTimeout(timer);
                 }
-            }, [data, token]);
+            }, [data, token, repoName]);
 
             const base64Encode = (str) => btoa(unescape(encodeURIComponent(str)));
             const base64Decode = (str) => decodeURIComponent(escape(atob(str)));
 
             const loadFromGitHub = async () => {
-                if (!token) return;
+                if (!token || !repoName) return;
                 setSyncStatus('syncing');
                 setErrorMsg('');
 
                 try {
                     const response = await fetch(
-                        `https://api.github.com/repos/${GITHUB_REPO}/contents/${DATA_FILE}`,
+                        `https://api.github.com/repos/${repoName}/contents/${DATA_FILE}`,
                         {
                             headers: {
                                 'Authorization': `token ${token}`,
@@ -507,13 +515,13 @@
                         const decodedData = JSON.parse(base64Decode(content.content));
                         setData(decodedData);
                         setSyncStatus('synced');
-                        setSuccessMsg('Daten von GitHub geladen');
+                        setSuccessMsg('Daten von GitHub geladen ✓');
                         setTimeout(() => setSuccessMsg(''), 3000);
                     } else if (response.status === 404) {
-                        // Datei existiert nicht, also initial speichern
+                        setSyncStatus('syncing');
                         await saveToGitHub();
                     } else {
-                        throw new Error(`GitHub Error: ${response.status}`);
+                        throw new Error(`${response.status}`);
                     }
                 } catch (error) {
                     setSyncStatus('error');
@@ -522,53 +530,33 @@
             };
 
             const saveToGitHub = async () => {
-                if (!token) return;
+                if (!token || !repoName) return;
                 setSyncStatus('syncing');
 
                 try {
-                    // Erst prüfen, ob Datei existiert (für SHA)
                     let sha = null;
                     const getResponse = await fetch(
-                        `https://api.github.com/repos/${GITHUB_REPO}/contents/${DATA_FILE}`,
-                        {
-                            headers: {
-                                'Authorization': `token ${token}`,
-                                'Accept': 'application/vnd.github.v3+json'
-                            }
-                        }
+                        `https://api.github.com/repos/${repoName}/contents/${DATA_FILE}`,
+                        { headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' } }
                     );
 
                     if (getResponse.ok) {
-                        const content = await getResponse.json();
-                        sha = content.sha;
-                    } else if (getResponse.status !== 404) {
-                        // Fehler außer 404 (Datei nicht gefunden)
-                        const errText = await getResponse.text();
-                        console.error('GET Response:', getResponse.status, errText);
+                        sha = (await getResponse.json()).sha;
                     }
 
-                    // Datei speichern/aktualisieren
                     const dataString = JSON.stringify(data, null, 2);
                     const encodedData = base64Encode(dataString);
-
                     const putBody = {
                         message: `Update tennis data - ${new Date().toLocaleString('de-DE')}`,
                         content: encodedData
                     };
-
-                    if (sha) {
-                        putBody.sha = sha;
-                    }
+                    if (sha) putBody.sha = sha;
 
                     const putResponse = await fetch(
-                        `https://api.github.com/repos/${GITHUB_REPO}/contents/${DATA_FILE}`,
+                        `https://api.github.com/repos/${repoName}/contents/${DATA_FILE}`,
                         {
                             method: 'PUT',
-                            headers: {
-                                'Authorization': `token ${token}`,
-                                'Accept': 'application/vnd.github.v3+json',
-                                'Content-Type': 'application/json'
-                            },
+                            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
                             body: JSON.stringify(putBody)
                         }
                     );
@@ -576,144 +564,96 @@
                     if (putResponse.ok) {
                         setSyncStatus('synced');
                     } else {
-                        const errData = await putResponse.json();
-                        let errorDetail = '';
-                        if (putResponse.status === 401) {
-                            errorDetail = 'Authentifizierung fehlgeschlagen - Token ungültig?';
-                        } else if (putResponse.status === 403) {
-                            errorDetail = 'Keine Schreibberechtigung - Token Scope "repo" erforderlich';
-                        } else if (errData.message) {
-                            errorDetail = errData.message;
-                        }
-                        throw new Error(`GitHub Error ${putResponse.status}: ${errorDetail}`);
+                        const err = await putResponse.json();
+                        if (putResponse.status === 404) throw new Error(`Repo "${repoName}" nicht gefunden`);
+                        throw new Error(err.message || `${putResponse.status}`);
                     }
                 } catch (error) {
                     setSyncStatus('error');
                     setErrorMsg(`Fehler beim Speichern: ${error.message}`);
-                    console.error('Save error:', error);
                 }
             };
 
-            const handleTokenSubmit = async () => {
+            const handleSetup = async () => {
                 const inputToken = tokenInputRef.current?.value?.trim();
-                if (!inputToken) {
-                    setErrorMsg('Token darf nicht leer sein');
+                const inputRepo = repoInputRef.current?.value?.trim();
+
+                if (!inputToken || !inputRepo) {
+                    setErrorMsg('Token und Repository Name sind erforderlich');
                     return;
                 }
 
-                if (!inputToken.startsWith('ghp_')) {
-                    setErrorMsg('Token muss mit "ghp_" beginnen');
-                    return;
-                }
-
-                // Token validieren
                 setSyncStatus('syncing');
                 setErrorMsg('');
-                
+
                 try {
                     const response = await fetch('https://api.github.com/user', {
-                        headers: {
-                            'Authorization': `token ${inputToken}`,
-                            'Accept': 'application/vnd.github.v3+json'
-                        }
+                        headers: { 'Authorization': `token ${inputToken}`, 'Accept': 'application/vnd.github.v3+json' }
                     });
 
-                    if (response.status === 401) {
-                        setErrorMsg('Token ungültig! Bitte überprüfe ihn auf https://github.com/settings/tokens');
-                        setSyncStatus('error');
-                        return;
-                    }
-
-                    if (response.status === 403) {
-                        setErrorMsg('Token hat nicht die richtige Berechtigung (Scope "repo" erforderlich)');
-                        setSyncStatus('error');
-                        return;
-                    }
-
-                    if (!response.ok) {
-                        setErrorMsg(`Token-Validierung fehlgeschlagen: ${response.status}`);
-                        setSyncStatus('error');
-                        return;
-                    }
+                    if (response.status === 401) throw new Error('Token ungültig');
+                    if (!response.ok) throw new Error(`${response.status}`);
 
                     localStorage.setItem('githubToken', inputToken);
+                    localStorage.setItem('githubRepo', inputRepo);
                     setToken(inputToken);
-                    setSuccessMsg('Token gespeichert und validiert! ✓');
-                    setTimeout(() => {
-                        loadFromGitHub();
-                    }, 500);
+                    setRepoName(inputRepo);
+                    setSuccessMsg('Setup erfolgreich! ✓');
+                    setTimeout(() => loadFromGitHub(), 500);
                 } catch (error) {
-                    setErrorMsg(`Netzwerkfehler beim Token-Check: ${error.message}`);
                     setSyncStatus('error');
+                    setErrorMsg(`Setup fehlgeschlagen: ${error.message}`);
                 }
             };
 
-            const handleTokenRemove = () => {
+            const handleReset = () => {
                 localStorage.removeItem('githubToken');
+                localStorage.removeItem('githubRepo');
                 setToken('');
+                setRepoName('');
                 setErrorMsg('');
             };
 
             const toggleAvailability = (month, weekIdx, player) => {
                 const states = ["❌", "🟡"];
                 const current = data[month][weekIdx].availabilities[player];
-                const currentIdx = states.indexOf(current);
-                const nextIdx = (currentIdx + 1) % states.length;
-                const newValue = states[nextIdx];
+                const nextIdx = (states.indexOf(current) + 1) % states.length;
 
                 setData(prev => ({
                     ...prev,
                     [month]: prev[month].map((week, idx) =>
-                        idx === weekIdx
-                            ? {
-                                ...week,
-                                availabilities: {
-                                    ...week.availabilities,
-                                    [player]: newValue
-                                }
-                            }
-                            : week
+                        idx === weekIdx ? { ...week, availabilities: { ...week.availabilities, [player]: states[nextIdx] } } : week
                     )
                 }));
-
                 setSyncStatus('syncing');
             };
 
             const calculateGameType = (availabilities) => {
-                const confirmCount = Object.values(availabilities).filter(v => v === "🟡").length;
-                if (confirmCount >= 4) return "Doppel";
-                if (confirmCount >= 2) return "Einzel";
-                return "";
+                const count = Object.values(availabilities).filter(v => v === "🟡").length;
+                return count >= 4 ? "Doppel" : count >= 2 ? "Einzel" : "";
             };
 
-            if (!token) {
+            if (!token || !repoName) {
                 return (
                     <div className="container">
                         <div className="header">
                             <h1>🟡 Montagsrunde Tennisplanung</h1>
-                            <p>Cloud Sync Edition - GitHub Integration</p>
+                            <p>Cloud Sync mit GitHub</p>
                         </div>
                         <div className="token-setup">
-                            <h2>GitHub Token einrichten</h2>
-                            <p>
-                                Um Änderungen auf allen Geräten synchron zu halten, brauchst du einen GitHub Personal Access Token.<br/>
-                                <strong>Der Token wird nur lokal in deinem Browser gespeichert.</strong>
-                            </p>
+                            <h2>GitHub Setup</h2>
+                            <p>Gib deinen GitHub Token und Repository Name ein, um Änderungen auf allen Geräten zu synchronisieren.</p>
                             <div className="token-input-group">
-                                <input
-                                    ref={tokenInputRef}
-                                    type="password"
-                                    placeholder="Gib dein GitHub Token ein (ghp_...)"
-                                    onKeyPress={(e) => e.key === 'Enter' && handleTokenSubmit()}
-                                />
-                                <button onClick={handleTokenSubmit}>Token prüfen & speichern</button>
+                                <input ref={tokenInputRef} type="password" placeholder="GitHub Token (ghp_...)" onKeyPress={(e) => e.key === 'Enter' && handleSetup()} />
+                                <input ref={repoInputRef} type="text" placeholder="z.B. phinemaria/phinemaria.github.io" onKeyPress={(e) => e.key === 'Enter' && handleSetup()} />
+                                <button onClick={handleSetup}>Setup starten</button>
                             </div>
                             <div className="token-note">
-                                <strong>Token noch nicht vorhanden?</strong><br/>
-                                1. Gehe zu <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a><br/>
-                                2. Name: "Tennis Planner"<br/>
-                                3. Scope: Hake ✅ "repo" an<br/>
-                                4. Kopiere den Token und füge ihn hier ein
+                                <strong>Anleitung:</strong><br/>
+                                1. Token erstellen: <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a><br/>
+                                2. Scope: ✅ "repo" anhaken<br/>
+                                3. Repository Name: Dein Benutzername/Reponame (z.B. phinemaria/phinemaria.github.io)<br/>
+                                4. Token wird lokal im Browser gespeichert
                             </div>
                         </div>
                     </div>
@@ -728,25 +668,13 @@
                         <div className="sync-status">
                             <div className={`status-dot ${syncStatus}`}></div>
                             <span>
-                                {syncStatus === 'syncing' && 'Wird synchronisiert...'}
+                                {syncStatus === 'syncing' && 'Synchronisiert...'}
                                 {syncStatus === 'synced' && 'Synchronisiert ✓'}
-                                {syncStatus === 'error' && 'Fehler beim Sync'}
+                                {syncStatus === 'error' && 'Fehler'}
                                 {syncStatus === 'idle' && 'Bereit'}
                             </span>
-                            <button 
-                                onClick={handleTokenRemove}
-                                style={{
-                                    marginLeft: '20px',
-                                    padding: '4px 12px',
-                                    fontSize: '12px',
-                                    background: 'rgba(255,255,255,0.2)',
-                                    border: '1px solid rgba(255,255,255,0.3)',
-                                    color: 'white',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                Token wechseln
+                            <button onClick={handleReset} style={{ marginLeft: '20px', padding: '4px 12px', fontSize: '12px', background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', borderRadius: '4px', cursor: 'pointer' }}>
+                                Neu einrichten
                             </button>
                         </div>
                     </div>
@@ -756,14 +684,8 @@
 
                     <div className="content">
                         <div className="legend">
-                            <div className="legend-item">
-                                <div className="legend-box" style={{ color: '#16a34a', borderColor: '#16a34a' }}>🟡</div>
-                                <span className="legend-text">Bestätigt</span>
-                            </div>
-                            <div className="legend-item">
-                                <div className="legend-box" style={{ color: '#dc2626', borderColor: '#dc2626' }}>❌</div>
-                                <span className="legend-text">Nicht verfügbar</span>
-                            </div>
+                            <div className="legend-item"><div className="legend-box" style={{ color: '#16a34a', borderColor: '#16a34a' }}>🟡</div><span>Bestätigt</span></div>
+                            <div className="legend-item"><div className="legend-box" style={{ color: '#dc2626', borderColor: '#dc2626' }}>❌</div><span>Nicht verfügbar</span></div>
                         </div>
 
                         <div className="months-container">
@@ -780,7 +702,6 @@
                                                         <div className="week-date-monday">{week.monday}</div>
                                                     </div>
                                                 </div>
-                                                
                                                 <div className="player-grid">
                                                     {Object.keys(PLAYERS).map(player => (
                                                         <div key={player} className="player-row">
@@ -788,17 +709,14 @@
                                                             <button
                                                                 className={`availability-btn ${week.availabilities[player] === '🟡' ? 'confirm' : 'unavailable'}`}
                                                                 onClick={() => toggleAvailability(month, idx, player)}
-                                                                title={`${PLAYERS[player]} - ${week.monday}`}
+                                                                title={`${PLAYERS[player]}`}
                                                             >
                                                                 {week.availabilities[player] || '−'}
                                                             </button>
                                                         </div>
                                                     ))}
                                                 </div>
-
-                                                <div className="game-type">
-                                                    {calculateGameType(week.availabilities) || '−'}
-                                                </div>
+                                                <div className="game-type">{calculateGameType(week.availabilities) || '−'}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -807,9 +725,7 @@
                         </div>
                     </div>
 
-                    <div className="footer">
-                        💾 Änderungen werden automatisch auf GitHub synchronisiert
-                    </div>
+                    <div className="footer">💾 Änderungen werden automatisch auf GitHub synchronisiert</div>
                 </div>
             );
         }
