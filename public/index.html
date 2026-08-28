@@ -196,6 +196,7 @@
 
         function getInitialData() {
             return {
+                logs: [],
                 Oktober: [
                     { kw: "KW 41", monday: "05.10.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
                     { kw: "KW 42", monday: "12.10.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
@@ -261,36 +262,18 @@
                     currentData = getInitialData();
                     const { insertError } = await supabaseClient
                         .from('tennis_data')
-                        .insert([{ data: currentData, updated_at: new Date().toISOString() }]);
+                        .insert([{ 
+                            data: currentData, 
+                            updated_at: new Date().toISOString() 
+                        }]);
                     if (insertError) throw insertError;
+                    logs = [];
                 } else {
                     currentData = data[0].data;
+                    logs = currentData.logs || [];
                     window.currentRowId = data[0].id;
-                }
-                
-                // Lade Logs
-                const { data: logsData, error: logsError } = await supabaseClient
-                    .from('tennis_logs')
-                    .select('*')
-                    .order('timestamp', { ascending: false })
-                    .limit(100);
-                
-                console.log('Logs loaded:', logsData);
-                console.log('Logs error:', logsError);
-                
-                if (logsData && logsData.length > 0) {
-                    logs = logsData.map(log => ({
-                        timestamp: log.timestamp,
-                        player: log.player,
-                        month: log.month,
-                        week: log.week,
-                        oldStatus: log.old_status,
-                        newStatus: log.new_status
-                    }));
-                    console.log('Mapped logs:', logs);
-                } else {
-                    console.log('No logs found in database');
-                    logs = [];
+                    
+                    console.log('Loaded logs:', logs);
                 }
                 
                 renderAll();
@@ -405,6 +388,7 @@
             console.log('Toggle clicked:', logEntry);
             
             logs.unshift(logEntry);
+            currentData.logs = logs;
             currentData[month][weekIdx].availabilities[player] = newStatus;
             renderAll();
             
@@ -414,7 +398,7 @@
                 const rowId = window.currentRowId || 1;
                 console.log('Saving to Supabase, rowId:', rowId);
                 
-                // Speichere Daten
+                // Speichere Daten (inkl. Logs)
                 const { error: updateError } = await supabaseClient
                     .from('tennis_data')
                     .update({ 
@@ -423,32 +407,11 @@
                     })
                     .eq('id', rowId);
                 
-                console.log('Data update error:', updateError);
+                console.log('Update error:', updateError);
                 
-                // Speichere Log
-                const logToSave = {
-                    player: logEntry.player,
-                    month: logEntry.month,
-                    week: logEntry.week,
-                    old_status: logEntry.oldStatus,
-                    new_status: logEntry.newStatus,
-                    timestamp: logEntry.timestamp
-                };
-                
-                console.log('Saving log:', logToSave);
-                
-                const { data: logResult, error: logError } = await supabaseClient
-                    .from('tennis_logs')
-                    .insert([logToSave])
-                    .select();
-                
-                console.log('Log insert result:', logResult);
-                console.log('Log insert error:', logError);
-                
-                if (updateError || logError) {
-                    const err = updateError || logError;
-                    console.error('Save error:', err);
-                    document.getElementById('syncStatus').textContent = 'FEHLER: ' + err.message;
+                if (updateError) {
+                    console.error('Save error:', updateError);
+                    document.getElementById('syncStatus').textContent = 'FEHLER: ' + updateError.message;
                 } else {
                     console.log('Saved successfully');
                     document.getElementById('syncStatus').textContent = 'Gespeichert ✓';
