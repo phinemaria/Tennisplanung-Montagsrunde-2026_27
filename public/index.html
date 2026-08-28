@@ -381,24 +381,30 @@
             try {
                 document.getElementById('syncStatus').textContent = 'Speichert...';
                 
-                // Nutze die richtige Reihen-ID
                 const rowId = window.currentRowId || 1;
-                const { error } = await supabaseClient
+                console.log('Updating row:', rowId, 'with data:', currentData);
+                
+                const { data, error } = await supabaseClient
                     .from('tennis_data')
                     .update({ 
                         data: currentData,
                         updated_at: new Date().toISOString()
                     })
-                    .eq('id', rowId);
+                    .eq('id', rowId)
+                    .select();
                 
-                if (!error) {
-                    document.getElementById('syncStatus').textContent = 'Synchronisiert ✓';
+                console.log('Update result:', { data, error });
+                
+                if (error) {
+                    console.error('Update ERROR:', error);
+                    document.getElementById('syncStatus').textContent = 'FEHLER: ' + error.message;
                 } else {
-                    throw error;
+                    console.log('Update SUCCESS');
+                    document.getElementById('syncStatus').textContent = 'Gespeichert ✓';
                 }
             } catch (error) {
-                console.error('Save error:', error);
-                document.getElementById('syncStatus').textContent = 'Fehler: ' + error.message;
+                console.error('Exception:', error);
+                document.getElementById('syncStatus').textContent = 'Exception: ' + error.message;
             }
         }
 
