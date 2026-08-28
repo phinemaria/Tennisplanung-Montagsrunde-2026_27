@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 const dataFile = path.join('/tmp', 'tennis-data.json');
+const logFile = path.join('/tmp', 'tennis-logs.json');
 
 function getInitialData() {
   return {
@@ -58,7 +59,6 @@ function getStoredData() {
     if (fs.existsSync(dataFile)) {
       const data = fs.readFileSync(dataFile, 'utf-8');
       const stored = JSON.parse(data);
-      // Merge mit neuen Monaten wenn sie fehlen
       const initial = getInitialData();
       for (const month in initial) {
         if (!stored[month]) {
@@ -83,6 +83,43 @@ function saveData(data) {
   }
 }
 
+function addLog(player, month, week, oldStatus, newStatus) {
+  try {
+    let logs = [];
+    if (fs.existsSync(logFile)) {
+      const data = fs.readFileSync(logFile, 'utf-8');
+      logs = JSON.parse(data);
+    }
+    
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      player: player,
+      month: month,
+      week: week,
+      oldStatus: oldStatus,
+      newStatus: newStatus
+    };
+    
+    logs.unshift(logEntry);
+    logs = logs.slice(0, 100);
+    fs.writeFileSync(logFile, JSON.stringify(logs, null, 2));
+  } catch (error) {
+    console.error('Error writing log:', error.message);
+  }
+}
+
+function getLogs() {
+  try {
+    if (fs.existsSync(logFile)) {
+      const data = fs.readFileSync(logFile, 'utf-8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.log('Error reading logs:', error.message);
+  }
+  return [];
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -99,6 +136,23 @@ export default async function handler(req, res) {
   if (req.method === 'POST' && req.query.action === 'save') {
     try {
       const data = req.body;
+      const oldData = getStoredData();
+      
+      // Log changes
+      for (const month in data) {
+        for (let i = 0; i < data[month].length; i++) {
+          for (const player in data[month][i].availabilities) {
+            if (oldData[month] && oldData[month][i]) {
+              const oldStatus = oldData[month][i].availabilities[player];
+              const newStatus = data[month][i].availabilities[player];
+              if (oldStatus !== newStatus) {
+                addLog(player, month, data[month][i].kw, oldStatus, newStatus);
+              }
+            }
+          }
+        }
+      }
+      
       const success = saveData(data);
       return res.status(200).json({ success: success, message: 'Daten gespeichert ✓', timestamp: new Date().toISOString() });
     } catch (error) {
@@ -110,6 +164,15 @@ export default async function handler(req, res) {
     try {
       const data = getStoredData();
       return res.status(200).json(data);
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  if (req.method === 'GET' && req.query.action === 'logs') {
+    try {
+      const logs = getLogs();
+      return res.status(200).json(logs);
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
