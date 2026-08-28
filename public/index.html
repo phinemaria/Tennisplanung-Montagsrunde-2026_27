@@ -402,6 +402,8 @@
                 newStatus: newStatus
             };
             
+            console.log('Toggle clicked:', logEntry);
+            
             logs.unshift(logEntry);
             currentData[month][weekIdx].availabilities[player] = newStatus;
             renderAll();
@@ -410,6 +412,7 @@
                 document.getElementById('syncStatus').textContent = 'Speichert...';
                 
                 const rowId = window.currentRowId || 1;
+                console.log('Saving to Supabase, rowId:', rowId);
                 
                 // Speichere Daten
                 const { error: updateError } = await supabaseClient
@@ -420,17 +423,27 @@
                     })
                     .eq('id', rowId);
                 
+                console.log('Data update error:', updateError);
+                
                 // Speichere Log
-                const { error: logError } = await supabaseClient
+                const logToSave = {
+                    player: logEntry.player,
+                    month: logEntry.month,
+                    week: logEntry.week,
+                    old_status: logEntry.oldStatus,
+                    new_status: logEntry.newStatus,
+                    timestamp: logEntry.timestamp
+                };
+                
+                console.log('Saving log:', logToSave);
+                
+                const { data: logResult, error: logError } = await supabaseClient
                     .from('tennis_logs')
-                    .insert([{
-                        player: logEntry.player,
-                        month: logEntry.month,
-                        week: logEntry.week,
-                        old_status: logEntry.oldStatus,
-                        new_status: logEntry.newStatus,
-                        timestamp: logEntry.timestamp
-                    }]);
+                    .insert([logToSave])
+                    .select();
+                
+                console.log('Log insert result:', logResult);
+                console.log('Log insert error:', logError);
                 
                 if (updateError || logError) {
                     const err = updateError || logError;
