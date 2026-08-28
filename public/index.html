@@ -275,7 +275,10 @@
                     .order('timestamp', { ascending: false })
                     .limit(100);
                 
-                if (logsData) {
+                console.log('Logs loaded:', logsData);
+                console.log('Logs error:', logsError);
+                
+                if (logsData && logsData.length > 0) {
                     logs = logsData.map(log => ({
                         timestamp: log.timestamp,
                         player: log.player,
@@ -284,6 +287,10 @@
                         oldStatus: log.old_status,
                         newStatus: log.new_status
                     }));
+                    console.log('Mapped logs:', logs);
+                } else {
+                    console.log('No logs found in database');
+                    logs = [];
                 }
                 
                 renderAll();
