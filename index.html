@@ -14,9 +14,11 @@
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             min-height: 100vh;
             padding: 20px;
+            overflow-x: auto;
         }
         .container {
             max-width: 1600px;
+            min-width: 320px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -82,14 +84,21 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
-        .content { padding: 16px 12px; }
+        .content { 
+            padding: 16px 12px; 
+            overflow-x: auto;
+        }
         .months-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 20px;
+            min-width: 100%;
         }
         @media (max-width: 900px) {
-            .months-container { grid-template-columns: 1fr; }
+            .months-container { 
+                grid-template-columns: 1fr;
+                min-width: 100%;
+            }
         }
         .month-title {
             font-size: 16px;
