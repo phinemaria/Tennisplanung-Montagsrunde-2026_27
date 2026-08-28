@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Montagsrunde Tennisplanung 2026/27</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -14,91 +11,68 @@
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             min-height: 100vh;
             padding: 20px;
-            overflow-x: auto;
         }
         .container {
             max-width: 1600px;
-            min-width: 320px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
-            overflow: visible;
             border: 1px solid rgba(51, 65, 85, 0.1);
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            overflow: visible;
         }
         .header {
             background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
             color: white;
             padding: 25px 30px;
             text-align: center;
-            position: relative;
-            overflow: hidden;
         }
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -10%;
-            width: 400px;
-            height: 400px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
+        .header h1 { font-size: 32px; font-weight: 800; margin-bottom: 4px; }
+        .header p { font-size: 14px; opacity: 0.9; }
+        .sync-status { margin-top: 12px; font-size: 12px; opacity: 0.9; }
+        .content { padding: 20px 30px; }
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
         }
-        .header h1 {
-            font-size: 32px;
-            font-weight: 800;
-            margin-bottom: 4px;
-            position: relative;
-        }
-        .header p {
-            font-size: 14px;
-            opacity: 0.9;
-            position: relative;
-        }
-        .sync-status {
+        .legend-item {
             display: flex;
             align-items: center;
             gap: 8px;
-            justify-content: center;
-            margin-top: 12px;
-            font-size: 12px;
-            opacity: 0.9;
+            font-size: 14px;
+            color: #475569;
         }
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
+        .changelog-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
         }
-        .status-dot.synced {
-            background: #10b981;
-            animation: none;
+        .changelog-section h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #1e293b;
         }
-        .status-dot.syncing {
-            background: #f59e0b;
+        .log-entry {
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 13px;
         }
-        .status-dot.error {
-            background: #ef4444;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .content { 
-            padding: 16px 12px; 
-            overflow-x: auto;
-        }
+        .log-entry:last-child { border-bottom: none; }
+        .log-time { color: #64748b; font-size: 12px; }
+        .log-player { font-weight: 700; color: #3b82f6; }
+        .log-change { color: #1e293b; margin-top: 4px; }
         .months-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 20px;
-            min-width: 100%;
         }
         @media (max-width: 900px) {
-            .months-container { 
-                grid-template-columns: 1fr;
-                min-width: 100%;
-            }
+            .months-container { grid-template-columns: 1fr; }
         }
         .month-title {
             font-size: 16px;
@@ -122,46 +96,18 @@
             border-radius: 8px;
             padding: 10px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-            transition: all 0.3s ease;
         }
-        .week-card:hover {
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            border-color: #cbd5e1;
-            transform: translateY(-1px);
-        }
-        .week-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .week-kw {
-            font-size: 13px;
-            font-weight: 700;
-            color: #64748b;
-            text-transform: uppercase;
-        }
-        .week-date-monday {
-            font-size: 14px;
-            font-weight: 800;
-            color: #0ea5e9;
-            margin-top: 3px;
-        }
+        .week-kw { font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+        .week-date { font-size: 12px; color: #0ea5e9; margin-top: 3px; font-weight: 800; }
         .player-row {
             display: grid;
             grid-template-columns: 28px 1fr;
             gap: 6px;
             align-items: center;
             margin-bottom: 4px;
+            margin-top: 8px;
         }
-        .player-name {
-            font-size: 13px;
-            font-weight: 700;
-            color: #1e293b;
-            text-transform: uppercase;
-        }
+        .player-name { font-size: 13px; font-weight: 700; color: #1e293b; text-transform: uppercase; }
         .availability-btn {
             width: 100%;
             border: 1px solid #e2e8f0;
@@ -184,9 +130,7 @@
             background: #fee2e2;
             border-color: #fca5a5;
         }
-        .availability-btn:hover {
-            transform: scale(1.05);
-        }
+        .availability-btn:hover { transform: scale(1.05); }
         .game-type {
             margin-top: 8px;
             padding: 6px;
@@ -198,91 +142,45 @@
             color: #64748b;
             min-height: 24px;
         }
-        .error-message {
-            background: #fee2e2;
-            border: 1px solid #fca5a5;
-            color: #991b1b;
-            padding: 12px 15px;
-            border-radius: 6px;
-            margin: 15px 30px;
-            font-size: 14px;
-        }
-        .legend {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            align-items: center;
-            margin: 20px 0;
-            flex-wrap: wrap;
-            padding: 0 20px;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: #475569;
-        }
-        .changelog-btn {
-            padding: 8px 16px;
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 13px;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .changelog-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-        }
-        .changelog-section {
-            margin: 20px 30px;
-            padding: 20px;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-        }
-        .changelog-section h3 {
-            margin: 0 0 15px 0;
-            font-size: 16px;
-            color: #1e293b;
-        }
-        .log-entry {
-            padding: 10px 0;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 13px;
-        }
-        .log-entry:last-child {
-            border-bottom: none;
-        }
-        .log-time {
-            color: #64748b;
-            font-size: 12px;
-        }
-        .log-player {
-            font-weight: 700;
-            color: #3b82f6;
-        }
-        .log-change {
-            color: #1e293b;
-            margin-top: 4px;
-        }
-        .empty-logs {
-            text-align: center;
-            padding: 20px;
-            color: #64748b;
-        }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div class="container">
+        <div class="header">
+            <h1>🟡 Montagsrunde Tennisplanung</h1>
+            <p>Saison 2026/2027 • Live Sync</p>
+            <div class="sync-status">
+                <span id="syncStatus">Lädt...</span>
+            </div>
+        </div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+        <div class="content">
+            <div class="legend">
+                <div class="legend-item"><span>🟡 Bestätigt</span></div>
+                <div class="legend-item"><span>❌ Nicht verfügbar</span></div>
+            </div>
 
+            <div class="changelog-section">
+                <h3>📋 Änderungshistorie</h3>
+                <div id="changelog">
+                    <div class="log-entry">
+                        <div class="log-time">28.08.2026 13:00:00</div>
+                        <div class="log-change">
+                            <span class="log-player">TEST</span>
+                            Oktober KW 40: ❌ → 🟡
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="months-container" id="monthsContainer">
+                <!-- Wird mit JavaScript gefüllt -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/tennis';
         const PLAYERS = {
             AB: "Axel Borchers",
             RP: "Robert Papendick",
@@ -291,214 +189,159 @@
             DR: "Dietmar Reule"
         };
 
-        const API_URL = '/api/tennis';
+        let currentData = null;
+        let logs = [
+            {
+                timestamp: '2026-08-28T13:00:00Z',
+                player: 'TEST',
+                month: 'Oktober',
+                week: 'KW 40',
+                oldStatus: '❌',
+                newStatus: '🟡'
+            }
+        ];
 
-        function TennisPlanner() {
-            const [data, setData] = useState(null);
-            const [logs, setLogs] = useState([
-                {
-                    timestamp: new Date().toISOString(),
-                    player: "TEST",
-                    month: "Oktober",
-                    week: "KW 40",
-                    oldStatus: "❌",
-                    newStatus: "🟡"
-                }
-            ]);
-            const [syncStatus, setSyncStatus] = useState('loading');
-            const [errorMsg, setErrorMsg] = useState('');
-            const [showChangelog, setShowChangelog] = useState(false);
+        // Load initial data
+        async function loadData() {
+            try {
+                document.getElementById('syncStatus').textContent = 'Synchronisiert ✓';
+                const response = await fetch(`${API_URL}?action=load`);
+                const data = await response.json();
+                currentData = data;
+                renderMonths();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('syncStatus').textContent = 'Fehler: ' + error.message;
+            }
+        }
 
-            useEffect(() => {
-                loadData();
-            }, []);
+        // Render months
+        function renderMonths() {
+            if (!currentData) return;
+            
+            const container = document.getElementById('monthsContainer');
+            container.innerHTML = '';
 
-            const loadData = async () => {
-                try {
-                    setSyncStatus('syncing');
-                    const response = await fetch(`${API_URL}?action=load`);
-                    const json = await response.json();
-                    setData(json);
-                    setSyncStatus('synced');
-                } catch (error) {
-                    setSyncStatus('error');
-                    setErrorMsg(`Fehler beim Laden: ${error.message}`);
-                }
-            };
+            for (const [month, weeks] of Object.entries(currentData)) {
+                const monthDiv = document.createElement('div');
+                
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'month-title';
+                titleDiv.textContent = month;
+                monthDiv.appendChild(titleDiv);
 
-            const saveData = async (newData) => {
-                try {
-                    setSyncStatus('syncing');
-                    
-                    if (data) {
-                        for (const month in newData) {
-                            for (let i = 0; i < newData[month].length; i++) {
-                                for (const player in newData[month][i].availabilities) {
-                                    if (data[month] && data[month][i]) {
-                                        const oldStatus = data[month][i].availabilities[player];
-                                        const newStatus = newData[month][i].availabilities[player];
-                                        if (oldStatus !== newStatus) {
-                                            const logEntry = {
-                                                timestamp: new Date().toISOString(),
-                                                player: player,
-                                                month: month,
-                                                week: newData[month][i].kw,
-                                                oldStatus: oldStatus,
-                                                newStatus: newStatus
-                                            };
-                                            setLogs(prev => [logEntry, ...prev.slice(0, 99)]);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                const gridDiv = document.createElement('div');
+                gridDiv.className = 'weeks-grid';
+
+                for (let i = 0; i < weeks.length; i++) {
+                    const week = weeks[i];
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'week-card';
+
+                    let html = `
+                        <div class="week-kw">${week.kw}</div>
+                        <div class="week-date">${week.monday}</div>
+                    `;
+
+                    for (const player of Object.keys(PLAYERS)) {
+                        const status = week.availabilities[player];
+                        const isConfirm = status === '🟡';
+                        html += `
+                            <div class="player-row">
+                                <div class="player-name">${player}</div>
+                                <button class="availability-btn ${isConfirm ? 'confirm' : 'unavailable'}" 
+                                    onclick="toggleAvailability('${month}', ${i}, '${player}')">
+                                    ${status}
+                                </button>
+                            </div>
+                        `;
                     }
-                    
-                    const response = await fetch(`${API_URL}?action=save`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(newData)
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        setSyncStatus('synced');
-                    }
-                } catch (error) {
-                    setSyncStatus('error');
-                    setErrorMsg(`Fehler beim Speichern: ${error.message}`);
-                    setTimeout(() => setErrorMsg(''), 5000);
+
+                    const confirmCount = Object.values(week.availabilities).filter(v => v === '🟡').length;
+                    const gameType = confirmCount >= 4 ? 'Doppel' : confirmCount >= 2 ? 'Einzel' : '−';
+                    html += `<div class="game-type">${gameType}</div>`;
+
+                    cardDiv.innerHTML = html;
+                    gridDiv.appendChild(cardDiv);
                 }
-            };
 
-            const toggleAvailability = (month, weekIdx, player) => {
-                if (!data) return;
-                const states = ["❌", "🟡"];
-                const current = data[month][weekIdx].availabilities[player];
-                const nextIdx = (states.indexOf(current) + 1) % states.length;
+                monthDiv.appendChild(gridDiv);
+                container.appendChild(monthDiv);
+            }
+        }
 
-                const newData = {
-                    ...data,
-                    [month]: data[month].map((week, idx) =>
-                        idx === weekIdx
-                            ? { ...week, availabilities: { ...week.availabilities, [player]: states[nextIdx] } }
-                            : week
-                    )
-                };
-                setData(newData);
-                saveData(newData);
-            };
+        // Toggle availability
+        async function toggleAvailability(month, weekIdx, player) {
+            if (!currentData) return;
 
-            const calculateGameType = (availabilities) => {
-                const count = Object.values(availabilities).filter(v => v === "🟡").length;
-                return count >= 4 ? "Doppel" : count >= 2 ? "Einzel" : "";
-            };
+            const states = ['❌', '🟡'];
+            const current = currentData[month][weekIdx].availabilities[player];
+            const nextIdx = (states.indexOf(current) + 1) % states.length;
+            const newStatus = states[nextIdx];
 
-            const formatTime = (isoString) => {
-                const date = new Date(isoString);
-                return date.toLocaleString('de-DE', { 
-                    day: '2-digit', 
-                    month: '2-digit', 
+            // Add log
+            const oldStatus = current;
+            logs.unshift({
+                timestamp: new Date().toISOString(),
+                player: player,
+                month: month,
+                week: currentData[month][weekIdx].kw,
+                oldStatus: oldStatus,
+                newStatus: newStatus
+            });
+            renderLogs();
+
+            // Update data
+            currentData[month][weekIdx].availabilities[player] = newStatus;
+
+            // Save to API
+            try {
+                document.getElementById('syncStatus').textContent = 'Synchronisiert...';
+                const response = await fetch(`${API_URL}?action=save`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentData)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('syncStatus').textContent = 'Synchronisiert ✓';
+                }
+            } catch (error) {
+                console.error('Error saving:', error);
+                document.getElementById('syncStatus').textContent = 'Fehler beim Speichern';
+            }
+
+            renderMonths();
+        }
+
+        // Render logs
+        function renderLogs() {
+            const changelogDiv = document.getElementById('changelog');
+            changelogDiv.innerHTML = logs.map(log => {
+                const date = new Date(log.timestamp);
+                const timeStr = date.toLocaleString('de-DE', {
+                    day: '2-digit',
+                    month: '2-digit',
                     year: 'numeric',
                     hour: '2-digit',
                     minute: '2-digit',
                     second: '2-digit'
                 });
-            };
-
-            if (!data) {
-                return (
-                    <div className="container">
-                        <div className="header">
-                            <h1>🟡 Montagsrunde Tennisplanung</h1>
-                            <p>Lädt...</p>
+                return `
+                    <div class="log-entry">
+                        <div class="log-time">${timeStr}</div>
+                        <div class="log-change">
+                            <span class="log-player">${log.player}</span>
+                            ${log.month} ${log.week}: ${log.oldStatus} → ${log.newStatus}
                         </div>
                     </div>
-                );
-            }
-
-            return (
-                <>
-                    <div className="container">
-                        <div className="header">
-                            <h1>🟡 Montagsrunde Tennisplanung</h1>
-                            <p>Saison 2026/2027 • Live Sync</p>
-                            <div className="sync-status">
-                                <div className={`status-dot ${syncStatus}`}></div>
-                                <span>
-                                    {syncStatus === 'syncing' && 'Synchronisiert...'}
-                                    {syncStatus === 'synced' && 'Synchronisiert ✓'}
-                                    {syncStatus === 'error' && 'Fehler'}
-                                    {syncStatus === 'loading' && 'Lädt...'}
-                                </span>
-                            </div>
-                        </div>
-
-                        {errorMsg && <div className="error-message">{errorMsg}</div>}
-
-                        <div className="content">
-                            <div className="legend">
-                                <div className="legend-item"><span>🟡 Bestätigt</span></div>
-                                <div className="legend-item"><span>❌ Nicht verfügbar</span></div>
-                            </div>
-
-                            <div className="changelog-section">
-                                <h3>📋 Änderungshistorie (letzte 100 Einträge)</h3>
-                                {logs.length === 0 ? (
-                                    <div className="empty-logs">Noch keine Änderungen</div>
-                                ) : (
-                                    logs.map((log, idx) => (
-                                        <div key={idx} className="log-entry">
-                                            <div className="log-time">{formatTime(log.timestamp)}</div>
-                                            <div className="log-change">
-                                                <span className="log-player">{log.player}</span>
-                                                {log.month} {log.week}: {log.oldStatus} → {log.newStatus}
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-
-                            <div className="months-container">
-                                {Object.entries(data).map(([month, weeks]) => (
-                                    <div key={month}>
-                                        <div className="month-title">{month}</div>
-                                        <div className="weeks-grid">
-                                            {weeks.map((week, idx) => (
-                                                <div key={idx} className="week-card">
-                                                    <div className="week-header">
-                                                        <div>
-                                                            <div className="week-kw">{week.kw}</div>
-                                                            <div className="week-date-monday">{week.monday}</div>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        {Object.keys(PLAYERS).map(player => (
-                                                            <div key={player} className="player-row">
-                                                                <div className="player-name">{player}</div>
-                                                                <button
-                                                                    className={`availability-btn ${week.availabilities[player] === '🟡' ? 'confirm' : 'unavailable'}`}
-                                                                    onClick={() => toggleAvailability(month, idx, player)}
-                                                                >
-                                                                    {week.availabilities[player]}
-                                                                </button>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                    <div className="game-type">{calculateGameType(week.availabilities) || '−'}</div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                </>
-            );
+                `;
+            }).join('');
         }
 
-        ReactDOM.render(<TennisPlanner />, document.getElementById('root'));
+        // Start
+        loadData();
+        renderLogs();
     </script>
 </body>
 </html>
