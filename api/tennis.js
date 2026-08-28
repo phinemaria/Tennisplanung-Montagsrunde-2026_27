@@ -56,7 +56,15 @@ function getStoredData() {
   try {
     if (fs.existsSync(dataFile)) {
       const data = fs.readFileSync(dataFile, 'utf-8');
-      return JSON.parse(data);
+      const stored = JSON.parse(data);
+      // Merge mit neuen Monaten wenn sie fehlen
+      const initial = getInitialData();
+      for (const month in initial) {
+        if (!stored[month]) {
+          stored[month] = initial[month];
+        }
+      }
+      return stored;
     }
   } catch (error) {
     console.log('Error reading file:', error.message);
