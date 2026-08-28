@@ -44,10 +44,39 @@
             padding: 15px;
             margin: 20px 0;
         }
-        .changelog-section h3 {
-            margin-bottom: 15px;
+        .changelog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .changelog-header h3 {
+            margin: 0;
             color: #333;
             font-size: 18px;
+        }
+        .toggle-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .toggle-btn:hover {
+            background: #2563eb;
+        }
+        .changelog-list {
+            display: none;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .changelog-list.open {
+            display: block;
         }
         .log-entry {
             padding: 10px 0;
@@ -144,8 +173,11 @@
         </div>
 
         <div class="changelog-section">
-            <h3>📋 Änderungshistorie</h3>
-            <div id="changelog">
+            <div class="changelog-header" onclick="toggleChangelog()">
+                <h3>📋 Änderungshistorie</h3>
+                <button class="toggle-btn" id="toggleBtn">Öffnen</button>
+            </div>
+            <div class="changelog-list" id="changelog">
                 <p>Lädt...</p>
             </div>
         </div>
@@ -166,9 +198,21 @@
             supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
         }
 
-        const PLAYERS = { AB: "AB", RP: "RP", DG: "DG", UW: "UW", DR: "DR" };
-        let currentData = null;
-        let logs = [];
+        let changelogOpen = false;
+
+        function toggleChangelog() {
+            const list = document.getElementById('changelog');
+            const btn = document.getElementById('toggleBtn');
+            changelogOpen = !changelogOpen;
+            
+            if (changelogOpen) {
+                list.classList.add('open');
+                btn.textContent = 'Zuklappen';
+            } else {
+                list.classList.remove('open');
+                btn.textContent = 'Öffnen';
+            }
+        }
 
         function getInitialData() {
             return {
