@@ -7,65 +7,56 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
             padding: 20px;
         }
         .container {
-            max-width: 1600px;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
-            border-radius: 20px;
-            border: 1px solid rgba(51, 65, 85, 0.1);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-            overflow: visible;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         .header {
             background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
             color: white;
-            padding: 25px 30px;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
             text-align: center;
         }
-        .header h1 { font-size: 32px; font-weight: 800; margin-bottom: 4px; }
-        .header p { font-size: 14px; opacity: 0.9; }
-        .sync-status { margin-top: 12px; font-size: 12px; opacity: 0.9; }
-        .content { padding: 20px 30px; }
+        .header h1 { font-size: 28px; margin-bottom: 5px; }
+        .sync-status { font-size: 14px; margin-top: 10px; }
         .legend {
             display: flex;
-            gap: 20px;
+            gap: 30px;
             justify-content: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: #475569;
+            margin: 20px 0;
+            font-size: 16px;
         }
         .changelog-section {
-            margin: 30px 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border: 1px solid #e2e8f0;
+            background: #f9f9f9;
+            border: 2px solid #e2e8f0;
             border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
         }
         .changelog-section h3 {
-            margin: 0 0 15px 0;
-            font-size: 16px;
-            color: #1e293b;
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
         }
         .log-entry {
             padding: 10px 0;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 13px;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
         }
         .log-entry:last-child { border-bottom: none; }
-        .log-time { color: #64748b; font-size: 12px; }
-        .log-player { font-weight: 700; color: #3b82f6; }
-        .log-change { color: #1e293b; margin-top: 4px; }
+        .log-time { color: #666; font-size: 12px; }
+        .log-player { color: #3b82f6; font-weight: bold; }
+        .log-change { color: #333; margin-top: 3px; }
         .months-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -74,73 +65,65 @@
         @media (max-width: 900px) {
             .months-container { grid-template-columns: 1fr; }
         }
+        .month-section { background: #fafafa; padding: 15px; border-radius: 8px; }
         .month-title {
             font-size: 16px;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e2e8f0;
-            text-transform: uppercase;
-            letter-spacing: 0.7px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ddd;
         }
         .weeks-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 10px;
-            margin-bottom: 16px;
         }
         .week-card {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
             padding: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
         }
-        .week-kw { font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; }
-        .week-date { font-size: 12px; color: #0ea5e9; margin-top: 3px; font-weight: 800; }
+        .week-header { font-size: 12px; font-weight: bold; margin-bottom: 10px; }
+        .week-kw { color: #666; }
+        .week-date { color: #0ea5e9; margin-top: 3px; }
         .player-row {
             display: grid;
-            grid-template-columns: 28px 1fr;
-            gap: 6px;
+            grid-template-columns: 30px 1fr;
+            gap: 5px;
+            margin: 8px 0;
             align-items: center;
-            margin-bottom: 4px;
-            margin-top: 8px;
         }
-        .player-name { font-size: 13px; font-weight: 700; color: #1e293b; text-transform: uppercase; }
-        .availability-btn {
-            width: 100%;
-            border: 1px solid #e2e8f0;
+        .player-name { font-size: 12px; font-weight: bold; }
+        .status-btn {
+            border: 1px solid #ddd;
             border-radius: 4px;
+            font-size: 16px;
+            padding: 4px;
             cursor: pointer;
-            font-weight: 700;
-            font-size: 18px;
             background: white;
-            padding: 6px 0;
-            height: 32px;
-            transition: all 0.2s;
+            height: 28px;
+            font-weight: bold;
         }
-        .availability-btn.confirm {
-            color: #16a34a;
+        .status-btn.confirm {
             background: #dcfce7;
             border-color: #86efac;
+            color: #16a34a;
         }
-        .availability-btn.unavailable {
-            color: #dc2626;
+        .status-btn.unavailable {
             background: #fee2e2;
             border-color: #fca5a5;
+            color: #dc2626;
         }
-        .availability-btn:hover { transform: scale(1.05); }
         .game-type {
-            margin-top: 8px;
-            padding: 6px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 700;
-            text-align: center;
             background: #f1f5f9;
-            color: #64748b;
-            min-height: 24px;
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 11px;
+            text-align: center;
+            margin-top: 8px;
+            color: #666;
         }
     </style>
 </head>
@@ -148,51 +131,42 @@
     <div class="container">
         <div class="header">
             <h1>🟡 Montagsrunde Tennisplanung</h1>
-            <p>Saison 2026/2027 • Live Sync</p>
+            <p>Saison 2026/2027</p>
             <div class="sync-status">
                 <span id="syncStatus">Lädt...</span>
             </div>
         </div>
 
-        <div class="content">
-            <div class="legend">
-                <div class="legend-item"><span>🟡 Bestätigt</span></div>
-                <div class="legend-item"><span>❌ Nicht verfügbar</span></div>
-            </div>
+        <div class="legend">
+            <span>🟡 Bestätigt</span>
+            <span>❌ Nicht verfügbar</span>
+        </div>
 
-            <div className="changelog-section">
-                <h3>📋 Änderungshistorie</h3>
-                <div id="changelog">
-                    <div class="log-entry">
-                        <div class="log-time">28.08.2026 13:00:00</div>
-                        <div class="log-change">
-                            <span class="log-player">TEST</span>
-                            Oktober KW 40: ❌ → 🟡
-                        </div>
+        <div class="changelog-section">
+            <h3>📋 Änderungshistorie</h3>
+            <div id="changelog">
+                <div class="log-entry">
+                    <div class="log-time">28.08.2026 13:00:00</div>
+                    <div class="log-change">
+                        <span class="log-player">TEST</span>
+                        Oktober KW 40: ❌ → 🟡
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="months-container" id="monthsContainer">
-                <!-- Wird mit JavaScript gefüllt -->
-            </div>
+        <div class="months-container" id="monthsContainer">
+            <p>Lädt...</p>
         </div>
     </div>
 
     <script>
         const API_URL = '/api/tennis';
-        const PLAYERS = {
-            AB: "Axel Borchers",
-            RP: "Robert Papendick",
-            DG: "Dirk Grothmann",
-            UW: "Ulrich Wegener",
-            DR: "Dietmar Reule"
-        };
-
+        const PLAYERS = { AB: "AB", RP: "RP", DG: "DG", UW: "UW", DR: "DR" };
         let currentData = null;
         let logs = [
             {
-                timestamp: '2026-08-28T13:00:00Z',
+                timestamp: new Date().toISOString(),
                 player: 'TEST',
                 month: 'Oktober',
                 week: 'KW 40',
@@ -201,191 +175,35 @@
             }
         ];
 
-        // Load initial data
         async function loadData() {
             try {
                 document.getElementById('syncStatus').textContent = 'Lädt...';
-                const response = await fetch(`${API_URL}?action=load`);
+                const response = await fetch(API_URL + '?action=load');
                 const data = await response.json();
                 currentData = data;
-                renderMonths();
-                document.getElementById('syncStatus').textContent = 'Synchronisiert ✓';
+                renderAll();
+                document.getElementById('syncStatus').textContent = 'OK ✓';
             } catch (error) {
-                console.error('Error loading data:', error);
-                document.getElementById('syncStatus').textContent = 'Fehler beim Laden';
-                // Fallback to initial data
-                currentData = getInitialData();
-                renderMonths();
+                console.error('Error:', error);
+                document.getElementById('syncStatus').textContent = 'Fehler: ' + error.message;
             }
         }
 
-        // Get initial data
-        function getInitialData() {
-            return {
-                Oktober: [
-                    { kw: "KW 40", monday: "28.09.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 41", monday: "05.10.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 42", monday: "12.10.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 43", monday: "19.10.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 44", monday: "26.10.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                ],
-                November: [
-                    { kw: "KW 45", monday: "02.11.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 46", monday: "09.11.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 47", monday: "16.11.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 48", monday: "23.11.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 49", monday: "30.11.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                ],
-                Dezember: [
-                    { kw: "KW 50", monday: "07.12.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 51", monday: "14.12.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 52", monday: "21.12.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 01", monday: "28.12.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                ],
-                Januar: [
-                    { kw: "KW 02", monday: "04.01.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 03", monday: "11.01.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 04", monday: "18.01.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 05", monday: "25.01.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                ],
-                Februar: [
-                    { kw: "KW 06", monday: "01.02.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 07", monday: "08.02.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 08", monday: "15.02.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 09", monday: "22.02.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                ],
-                März: [
-                    { kw: "KW 10", monday: "01.03.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 11", monday: "08.03.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 12", monday: "15.03.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 13", monday: "22.03.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 14", monday: "29.03.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                ],
-                April: [
-                    { kw: "KW 15", monday: "05.04.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 16", monday: "12.04.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 17", monday: "19.04.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                    { kw: "KW 18", monday: "26.04.2027", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
-                ]
-            };
-        }
-
-        // Render months
-        function renderMonths() {
-            if (!currentData) return;
-            
-            const container = document.getElementById('monthsContainer');
-            container.innerHTML = '';
-
-            for (const [month, weeks] of Object.entries(currentData)) {
-                const monthDiv = document.createElement('div');
-                
-                const titleDiv = document.createElement('div');
-                titleDiv.className = 'month-title';
-                titleDiv.textContent = month;
-                monthDiv.appendChild(titleDiv);
-
-                const gridDiv = document.createElement('div');
-                gridDiv.className = 'weeks-grid';
-
-                for (let i = 0; i < weeks.length; i++) {
-                    const week = weeks[i];
-                    const cardDiv = document.createElement('div');
-                    cardDiv.className = 'week-card';
-
-                    let html = `
-                        <div class="week-kw">${week.kw}</div>
-                        <div class="week-date">${week.monday}</div>
-                    `;
-
-                    for (const player of Object.keys(PLAYERS)) {
-                        const status = week.availabilities[player];
-                        const isConfirm = status === '🟡';
-                        html += `
-                            <div class="player-row">
-                                <div class="player-name">${player}</div>
-                                <button class="availability-btn ${isConfirm ? 'confirm' : 'unavailable'}" 
-                                    onclick="toggleAvailability('${month}', ${i}, '${player}')">
-                                    ${status}
-                                </button>
-                            </div>
-                        `;
-                    }
-
-                    const confirmCount = Object.values(week.availabilities).filter(v => v === '🟡').length;
-                    const gameType = confirmCount >= 4 ? 'Doppel' : confirmCount >= 2 ? 'Einzel' : '−';
-                    html += `<div class="game-type">${gameType}</div>`;
-
-                    cardDiv.innerHTML = html;
-                    gridDiv.appendChild(cardDiv);
-                }
-
-                monthDiv.appendChild(gridDiv);
-                container.appendChild(monthDiv);
-            }
-        }
-
-        // Toggle availability
-        async function toggleAvailability(month, weekIdx, player) {
-            if (!currentData) return;
-
-            const states = ['❌', '🟡'];
-            const current = currentData[month][weekIdx].availabilities[player];
-            const nextIdx = (states.indexOf(current) + 1) % states.length;
-            const newStatus = states[nextIdx];
-
-            // Add log
-            const oldStatus = current;
-            logs.unshift({
-                timestamp: new Date().toISOString(),
-                player: player,
-                month: month,
-                week: currentData[month][weekIdx].kw,
-                oldStatus: oldStatus,
-                newStatus: newStatus
-            });
+        function renderAll() {
             renderLogs();
-
-            // Update data locally
-            currentData[month][weekIdx].availabilities[player] = newStatus;
             renderMonths();
-            
-            // Save to API
-            try {
-                document.getElementById('syncStatus').textContent = 'Speichert...';
-                const response = await fetch(`${API_URL}?action=save`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(currentData)
-                });
-                const result = await response.json();
-                if (result.success) {
-                    document.getElementById('syncStatus').textContent = 'Synchronisiert ✓';
-                } else {
-                    document.getElementById('syncStatus').textContent = 'Fehler beim Speichern';
-                }
-            } catch (error) {
-                console.error('Error saving:', error);
-                document.getElementById('syncStatus').textContent = 'Fehler beim Speichern';
-            }
         }
 
-        // Render logs
         function renderLogs() {
-            const changelogDiv = document.getElementById('changelog');
-            changelogDiv.innerHTML = logs.map(log => {
+            const html = logs.map(log => {
                 const date = new Date(log.timestamp);
-                const timeStr = date.toLocaleString('de-DE', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
+                const time = date.toLocaleString('de-DE', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
                 });
                 return `
                     <div class="log-entry">
-                        <div class="log-time">${timeStr}</div>
+                        <div class="log-time">${time}</div>
                         <div class="log-change">
                             <span class="log-player">${log.player}</span>
                             ${log.month} ${log.week}: ${log.oldStatus} → ${log.newStatus}
@@ -393,11 +211,79 @@
                     </div>
                 `;
             }).join('');
+            document.getElementById('changelog').innerHTML = html;
         }
 
-        // Start
+        function renderMonths() {
+            if (!currentData) return;
+            let html = '';
+            
+            for (const [month, weeks] of Object.entries(currentData)) {
+                html += `<div class="month-section">
+                    <div class="month-title">${month}</div>
+                    <div class="weeks-grid">`;
+                
+                weeks.forEach((week, idx) => {
+                    const confirmCount = Object.values(week.availabilities).filter(v => v === '🟡').length;
+                    const gameType = confirmCount >= 4 ? 'Doppel' : confirmCount >= 2 ? 'Einzel' : '−';
+                    
+                    html += `<div class="week-card">
+                        <div class="week-header">
+                            <div class="week-kw">${week.kw}</div>
+                            <div class="week-date">${week.monday}</div>
+                        </div>`;
+                    
+                    Object.keys(PLAYERS).forEach(player => {
+                        const status = week.availabilities[player];
+                        const isConfirm = status === '🟡';
+                        html += `<div class="player-row">
+                            <div class="player-name">${player}</div>
+                            <button class="status-btn ${isConfirm ? 'confirm' : 'unavailable'}" 
+                                onclick="toggle('${month}', ${idx}, '${player}')">
+                                ${status}
+                            </button>
+                        </div>`;
+                    });
+                    
+                    html += `<div class="game-type">${gameType}</div></div>`;
+                });
+                
+                html += `</div></div>`;
+            }
+            
+            document.getElementById('monthsContainer').innerHTML = html;
+        }
+
+        async function toggle(month, weekIdx, player) {
+            const states = ['❌', '🟡'];
+            const current = currentData[month][weekIdx].availabilities[player];
+            const nextIdx = (states.indexOf(current) + 1) % states.length;
+            const newStatus = states[nextIdx];
+            
+            logs.unshift({
+                timestamp: new Date().toISOString(),
+                player: player,
+                month: month,
+                week: currentData[month][weekIdx].kw,
+                oldStatus: current,
+                newStatus: newStatus
+            });
+            
+            currentData[month][weekIdx].availabilities[player] = newStatus;
+            renderAll();
+            
+            try {
+                await fetch(API_URL + '?action=save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentData)
+                });
+            } catch (e) {
+                console.error('Save error:', e);
+            }
+        }
+
         loadData();
-        renderLogs();
     </script>
 </body>
 </html>
