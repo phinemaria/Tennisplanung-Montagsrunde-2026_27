@@ -182,12 +182,13 @@
                 const data = await response.json();
                 currentData = data;
                 renderAll();
-                document.getElementById('syncStatus').textContent = 'OK ✓';
+                document.getElementById('syncStatus').textContent = 'Synchronisiert ✓';
             } catch (error) {
                 console.error('Error:', error);
                 document.getElementById('syncStatus').textContent = 'Fehler: ' + error.message;
             }
         }
+
 
         function renderAll() {
             renderLogs();
