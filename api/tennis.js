@@ -17,15 +17,15 @@ function getInitialData() {
       { kw: "KW 46", weekRange: "09.11.2026 - 15.11.2026", monday: "Montag, 09.11.2026", availabilities: { AB: "🟡", RP: "❌", DG: "🟡", UW: "🟡", DR: "🟡" } },
       { kw: "KW 47", weekRange: "16.11.2026 - 22.11.2026", monday: "Montag, 16.11.2026", availabilities: { AB: "🟡", RP: "🟡", DG: "❌", UW: "🟡", DR: "🟡" } },
       { kw: "KW 48", weekRange: "23.11.2026 - 29.11.2026", monday: "Montag, 23.11.2026", availabilities: { AB: "🟡", RP: "🟡", DG: "🟡", UW: "❌", DR: "🟡" } },
+      { kw: "KW 49", weekRange: "30.11.2026 - 06.12.2026", monday: "Montag, 30.11.2026", availabilities: { AB: "🟡", RP: "🟡", DG: "🟡", UW: "🟡", DR: "❌" } },
     ],
     Dezember: [
-      { kw: "KW 49", weekRange: "30.11.2026 - 06.12.2026", monday: "Montag, 30.11.2026", availabilities: { AB: "🟡", RP: "🟡", DG: "🟡", UW: "🟡", DR: "❌" } },
       { kw: "KW 50", weekRange: "07.12.2026 - 13.12.2026", monday: "Montag, 07.12.2026", availabilities: { AB: "🟡", RP: "🟡", DG: "🟡", UW: "🟡", DR: "🟡" } },
-      { kw: "KW 51", weekRange: "14.12.2026 - 20.12.2026", monday: "Montag, 14.12.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+      { kw: "KW 51", weekRange: "14.12.2026 - 20.12.2026", monday: "Montag, 14.12.2026", availabilities: { AB: "🟡", RP: "🟡", DG: "🟡", UW: "🟡", DR: "🟡" } },
       { kw: "KW 52", weekRange: "21.12.2026 - 27.12.2026", monday: "Montag, 21.12.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
+      { kw: "KW 01", weekRange: "28.12.2026 - 03.01.2027", monday: "Montag, 28.12.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
     ],
     Januar: [
-      { kw: "KW 01", weekRange: "28.12.2026 - 03.01.2027", monday: "Montag, 28.12.2026", availabilities: { AB: "❌", RP: "❌", DG: "❌", UW: "❌", DR: "❌" } },
       { kw: "KW 02", weekRange: "04.01.2027 - 10.01.2027", monday: "Montag, 04.01.2027", availabilities: { AB: "🟡", RP: "🟡", DG: "🟡", UW: "🟡", DR: "🟡" } },
       { kw: "KW 03", weekRange: "11.01.2027 - 17.01.2027", monday: "Montag, 11.01.2027", availabilities: { AB: "🟡", RP: "🟡", DG: "🟡", UW: "🟡", DR: "🟡" } },
       { kw: "KW 04", weekRange: "18.01.2027 - 24.01.2027", monday: "Montag, 18.01.2027", availabilities: { AB: "🟡", RP: "🟡", DG: "🟡", UW: "🟡", DR: "🟡" } },
@@ -48,6 +48,7 @@ function getInitialData() {
       { kw: "KW 15", weekRange: "05.04.2027 - 11.04.2027", monday: "Montag, 05.04.2027", availabilities: { AB: "🟡", RP: "🟡", DG: "🟡", UW: "🟡", DR: "🟡" } },
       { kw: "KW 16", weekRange: "12.04.2027 - 18.04.2027", monday: "Montag, 12.04.2027", availabilities: { AB: "🟡", RP: "🟡", DG: "🟡", UW: "🟡", DR: "🟡" } },
       { kw: "KW 17", weekRange: "19.04.2027 - 25.04.2027", monday: "Montag, 19.04.2027", availabilities: { AB: "🟡", RP: "🟡", DG: "🟡", UW: "🟡", DR: "🟡" } },
+      { kw: "KW 18", weekRange: "26.04.2027 - 02.05.2027", monday: "Montag, 26.04.2027", availabilities: { AB: "🟡", RP: "🟡", DG: "🟡", UW: "🟡", DR: "🟡" } },
     ]
   };
 }
