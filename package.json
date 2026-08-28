@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Montagsrunde Tennisplanung mit Vercel Backend",
   "scripts": {
-    "build": "echo 'Build complete'"
+    "build": "node build.js"
   },
   "engines": {
     "node": "24.x"
