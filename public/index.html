@@ -172,14 +172,31 @@
             border: 1px solid #ccc;
             border-radius: 3px;
             font-style: italic;
-            color: #666;
+            font-weight: bold;
+            color: #dc2626;
             background: #fafafa;
+            overflow: hidden;
+            white-space: nowrap;
         }
+        
+        .remarks-field input.scroll-active {
+            animation: scroll 8s linear infinite;
+        }
+        
+        @keyframes scroll {
+            from {
+                text-indent: 100%;
+            }
+            to {
+                text-indent: -100%;
+            }
+        }
+        
         .remarks-field input:focus {
             outline: none;
             border-color: #3b82f6;
             background: white;
-            color: #333;
+            color: #dc2626;
         }
         .remarks-field input::placeholder {
             color: #999;
@@ -329,9 +346,27 @@
             }
         }
 
+        function updateScrollAnimation(input) {
+            const text = input.value.trim().toLowerCase();
+            
+            // Laufschrift nur wenn: Text vorhanden UND "bemerkung" nicht drin
+            if (text.length > 0 && !text.includes('bemerkung')) {
+                input.classList.add('scroll-active');
+            } else {
+                input.classList.remove('scroll-active');
+            }
+        }
+
         function renderAll() {
             renderLogs();
             renderMonths();
+            
+            // Initialisiere Scroll-Animation für alle Bemerkungsfelder
+            setTimeout(() => {
+                document.querySelectorAll('.remarks-field input').forEach(input => {
+                    updateScrollAnimation(input);
+                });
+            }, 0);
         }
 
         function renderLogs() {
@@ -382,7 +417,8 @@
                                 placeholder="Bemerkung..." 
                                 value="${week.remarks || ''}"
                                 maxlength="60"
-                                onchange="saveRemarks('${month}', ${idx}, this.value)">
+                                onchange="saveRemarks('${month}', ${idx}, this.value)"
+                                oninput="updateScrollAnimation(this)">
                         </div>`;
                     
                     Object.keys(PLAYERS).forEach(player => {
