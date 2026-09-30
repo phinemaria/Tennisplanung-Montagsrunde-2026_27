@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Montagsrunde Tennisplanung 2026/27</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.0"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -172,31 +172,14 @@
             border: 1px solid #ccc;
             border-radius: 3px;
             font-style: italic;
-            font-weight: bold;
-            color: #dc2626;
+            color: #666;
             background: #fafafa;
-            overflow: hidden;
-            white-space: nowrap;
         }
-        
-        .remarks-field input.scroll-active {
-            animation: scroll 8s linear infinite;
-        }
-        
-        @keyframes scroll {
-            from {
-                text-indent: 100%;
-            }
-            to {
-                text-indent: -100%;
-            }
-        }
-        
         .remarks-field input:focus {
             outline: none;
             border-color: #3b82f6;
             background: white;
-            color: #dc2626;
+            color: #333;
         }
         .remarks-field input::placeholder {
             color: #999;
@@ -346,27 +329,9 @@
             }
         }
 
-        function updateScrollAnimation(input) {
-            const text = input.value.trim().toLowerCase();
-            
-            // Laufschrift nur wenn: Text vorhanden UND "bemerkung" nicht drin
-            if (text.length > 0 && !text.includes('bemerkung')) {
-                input.classList.add('scroll-active');
-            } else {
-                input.classList.remove('scroll-active');
-            }
-        }
-
         function renderAll() {
             renderLogs();
             renderMonths();
-            
-            // Initialisiere Scroll-Animation für alle Bemerkungsfelder
-            setTimeout(() => {
-                document.querySelectorAll('.remarks-field input').forEach(input => {
-                    updateScrollAnimation(input);
-                });
-            }, 0);
         }
 
         function renderLogs() {
@@ -417,8 +382,7 @@
                                 placeholder="Bemerkung..." 
                                 value="${week.remarks || ''}"
                                 maxlength="60"
-                                onchange="saveRemarks('${month}', ${idx}, this.value)"
-                                oninput="updateScrollAnimation(this)">
+                                onchange="saveRemarks('${month}', ${idx}, this.value)">
                         </div>`;
                     
                     Object.keys(PLAYERS).forEach(player => {
