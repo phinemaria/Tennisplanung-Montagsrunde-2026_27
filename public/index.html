@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Montagsrunde Tennisplanung 2026/27</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -30,13 +30,6 @@
         }
         .header h1 { font-size: 28px; margin-bottom: 5px; }
         .sync-status { font-size: 14px; margin-top: 10px; }
-        .visit-counter {
-            font-size: 16px;
-            color: white;
-            font-weight: bold;
-            margin-top: 10px;
-            display: inline-block;
-        }
         .legend {
             display: flex;
             gap: 30px;
@@ -179,17 +172,37 @@
             border: 1px solid #ccc;
             border-radius: 3px;
             font-style: italic;
-            color: #666;
+            font-weight: bold;
+            color: #dc2626;
             background: #fafafa;
+            overflow: hidden;
+            white-space: nowrap;
         }
+        
+        .remarks-field input.scroll-active {
+            animation: scroll 8s linear infinite;
+        }
+        
+        @keyframes scroll {
+            from { text-indent: 100%; }
+            to { text-indent: -100%; }
+        }
+        
         .remarks-field input:focus {
             outline: none;
             border-color: #3b82f6;
             background: white;
-            color: #333;
+            color: #dc2626;
         }
         .remarks-field input::placeholder {
             color: #999;
+        }
+        
+        .visit-counter {
+            font-size: 16px;
+            color: white;
+            font-weight: bold;
+            margin-top: 10px;
         }
         .game-type {
             background: #f1f5f9;
@@ -209,7 +222,7 @@
             <p>Saison 2026/2027 • Live mit Supabase</p>
             <div class="sync-status">
                 <span id="syncStatus">Lädt...</span>
-                <div class="visit-counter">👥 Besuche: 0</div>
+                <div class="visit-counter" id="visitCounter">Besuche: 0</div>
             </div>
         </div>
 
@@ -298,6 +311,47 @@
             };
         }
 
+        function updateScrollAnimation(input) {
+            const text = input.value.trim().toLowerCase();
+            if (text.length > 0 && !text.includes('bemerkung')) {
+                input.classList.add('scroll-active');
+            } else {
+                input.classList.remove('scroll-active');
+            }
+        }
+
+        function trackVisit() {
+            const SUPABASE_URL = 'https://wjayzhuztdaqznnixekc.supabase.co';
+            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqYXl6aHV6dGRhcXpubml4ZWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5MTczODcsImV4cCI6MjEwMzQ5MzM4N30.DOheTcTjNAXhDgN-gfg1EjK_ThYRuccSiSJVS-uiR1Q';
+            
+            fetch(`${SUPABASE_URL}/rest/v1/page_visits?page_name=eq.montag&select=visit_count`, {
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    const newCount = data[0].visit_count + 1;
+                    
+                    fetch(`${SUPABASE_URL}/rest/v1/page_visits?page_name=eq.montag`, {
+                        method: 'PATCH',
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ visit_count: newCount })
+                    })
+                    .then(() => {
+                        document.getElementById('visitCounter').textContent = `Besuche: ${newCount}`;
+                    });
+                }
+            })
+            .catch(err => console.error('Visit error:', err));
+        }
+
         async function loadData() {
             try {
                 document.getElementById('syncStatus').textContent = 'Lädt...';
@@ -328,6 +382,7 @@
                 }
                 
                 renderAll();
+                trackVisit();
                 document.getElementById('syncStatus').textContent = 'Synchronisiert ✓';
             } catch (error) {
                 console.error('Error:', error);
@@ -340,6 +395,12 @@
         function renderAll() {
             renderLogs();
             renderMonths();
+            
+            setTimeout(() => {
+                document.querySelectorAll('.remarks-field input').forEach(input => {
+                    updateScrollAnimation(input);
+                });
+            }, 0);
         }
 
         function renderLogs() {
@@ -390,7 +451,8 @@
                                 placeholder="Bemerkung..." 
                                 value="${week.remarks || ''}"
                                 maxlength="60"
-                                onchange="saveRemarks('${month}', ${idx}, this.value)">
+                                onchange="saveRemarks('${month}', ${idx}, this.value)"
+                                oninput="updateScrollAnimation(this)">
                         </div>`;
                     
                     Object.keys(PLAYERS).forEach(player => {
