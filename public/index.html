@@ -105,6 +105,24 @@
             border-radius: 6px;
             padding: 10px;
         }
+        .week-card.expired {
+            background: #f5f5f5;
+            opacity: 0.6;
+            border-color: #ccc;
+        }
+        .week-card.expired .week-date,
+        .week-card.expired .week-kw,
+        .week-card.expired .player-name,
+        .week-card.expired .status-btn,
+        .week-card.expired .game-type {
+            color: #999;
+        }
+        .week-card.expired .status-btn {
+            cursor: not-allowed;
+        }
+        .week-card.hidden {
+            display: none;
+        }
         .week-header { font-size: 12px; font-weight: bold; margin-bottom: 10px; }
         .week-kw { color: #666; }
         .week-date { color: #0ea5e9; margin-top: 3px; }
@@ -311,6 +329,24 @@
             };
         }
 
+        function getWeekStatus(dateStr) {
+            // dateStr format: "01.10.2026"
+            const [day, month, year] = dateStr.split('.').map(Number);
+            const weekDate = new Date(year, month - 1, day);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const daysAgo = Math.floor((today - weekDate) / (1000 * 60 * 60 * 24));
+            
+            if (daysAgo < 0) {
+                return 'future'; // Zukünftig
+            } else if (daysAgo <= 28) { // 4 Wochen
+                return 'recent'; // Kürzlich (Normal oder Grau)
+            } else {
+                return 'old'; // Alt (Ausblenden)
+            }
+        }
+
         function updateScrollAnimation(input) {
             const text = input.value.trim().toLowerCase();
             if (text.length > 0 && !text.includes('bemerkung')) {
@@ -441,7 +477,17 @@
                     
                     const gameType = confirmCount >= 4 ? 'Doppel' : confirmCount >= 2 ? 'Einzel' : '−';
                     
-                    html += `<div class="week-card">
+                    // Woche-Status prüfen
+                    const status = getWeekStatus(week.monday);
+                    let weekClasses = 'week-card';
+                    
+                    if (status === 'old') {
+                        weekClasses += ' hidden'; // Ausblenden
+                    } else if (status === 'recent' && Math.floor((new Date() - new Date(week.monday.split('.').reverse().join('-'))) / (1000 * 60 * 60 * 24)) >= 0) {
+                        weekClasses += ' expired'; // Grau machen
+                    }
+                    
+                    html += `<div class="${weekClasses}">
                         <div class="week-header">
                             <div class="week-kw">${week.kw}</div>
                             <div class="week-date">${week.monday}</div>
