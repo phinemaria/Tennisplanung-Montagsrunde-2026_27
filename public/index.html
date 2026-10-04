@@ -477,14 +477,17 @@
                     
                     const gameType = confirmCount >= 4 ? 'Doppel' : confirmCount >= 2 ? 'Einzel' : '−';
                     
-                    // Woche-Status prüfen
-                    const status = getWeekStatus(week.monday);
-                    let weekClasses = 'week-card';
+                    // Woche-Status prüfen (Datum parsing: DD.MM.YYYY → YYYY-MM-DD)
+                    const dateObj = new Date(week.monday.split('.').reverse().join('-'));
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const daysAgo = Math.floor((today - dateObj) / (1000 * 60 * 60 * 24));
                     
-                    if (status === 'old') {
-                        weekClasses += ' hidden'; // Ausblenden
-                    } else if (status === 'recent' && Math.floor((new Date() - new Date(week.monday.split('.').reverse().join('-'))) / (1000 * 60 * 60 * 24)) >= 0) {
-                        weekClasses += ' expired'; // Grau machen
+                    let weekClasses = 'week-card';
+                    if (daysAgo > 28) {
+                        weekClasses += ' hidden'; // älter als 4 Wochen: ausblenden
+                    } else if (daysAgo >= 0) {
+                        weekClasses += ' expired'; // 0-28 Tage alt: grau
                     }
                     
                     html += `<div class="${weekClasses}">
