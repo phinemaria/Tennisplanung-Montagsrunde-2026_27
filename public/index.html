@@ -339,9 +339,16 @@
                 </div>
             </div>
             
-            <div id="statsBox" class="stats-box">
-                <div class="stats-title">📊 Spieler-Statistik (Saison)</div>
-                <div id="statsContainer" class="stats-grid">
+            <div id="stats100Box" class="stats-box">
+                <div class="stats-title">⭐ Stammspieler (100%-Ziel)</div>
+                <div id="stats100Container" class="stats-grid">
+                    Lädt...
+                </div>
+            </div>
+            
+            <div id="stats50Box" class="stats-box">
+                <div class="stats-title">📊 Gelegenheitsspieler (50%-Ziel)</div>
+                <div id="stats50Container" class="stats-grid">
                     Lädt...
                 </div>
             </div>
@@ -536,6 +543,9 @@
         }
 
         function calculateStats() {
+            const fullPlayers = ['AB', 'RP']; // 100% Spieler
+            const partialPlayers = Object.keys(PLAYERS).filter(p => !fullPlayers.includes(p)); // 50% Spieler
+            
             const stats = {};
             Object.keys(PLAYERS).forEach(player => {
                 stats[player] = { total: 0, confirmed: 0 };
@@ -556,17 +566,19 @@
                 });
             });
             
-            const html = Object.entries(stats)
-                .sort((a, b) => (b[1].confirmed / b[1].total || 0) - (a[1].confirmed / a[1].total || 0))
-                .map(([name, data]) => {
+            // 100% Spieler
+            const html100 = fullPlayers
+                .filter(name => stats[name])
+                .sort((a, b) => (stats[b].confirmed / stats[b].total || 0) - (stats[a].confirmed / stats[a].total || 0))
+                .map(name => {
+                    const data = stats[name];
                     const percent = data.total > 0 ? Math.round((data.confirmed / data.total) * 100) : 0;
-                    // Farbwahl basierend auf Quote
                     let barColor = '#10b981'; // Grün >= 66%
                     if (percent < 33) barColor = '#ef4444'; // Rot < 33%
                     else if (percent < 66) barColor = '#eab308'; // Gelb 33-66%
                     
                     return `<div class="stat-item">
-                        <div class="stat-name">${name}</div>
+                        <div class="stat-name">${name} (100%)</div>
                         <div class="stat-ratio">${data.confirmed}/${data.total} (${percent}%)</div>
                         <div class="stat-bar-container">
                             <div class="stat-bar" style="width: ${percent}%; background-color: ${barColor};"></div>
@@ -574,7 +586,28 @@
                     </div>`;
                 }).join('');
             
-            document.getElementById('statsContainer').innerHTML = html;
+            // 50% Spieler
+            const html50 = partialPlayers
+                .filter(name => stats[name])
+                .sort((a, b) => (stats[b].confirmed / stats[b].total || 0) - (stats[a].confirmed / stats[a].total || 0))
+                .map(name => {
+                    const data = stats[name];
+                    const percent = data.total > 0 ? Math.round((data.confirmed / data.total) * 100) : 0;
+                    let barColor = '#10b981'; // Grün >= 50%
+                    if (percent < 25) barColor = '#ef4444'; // Rot < 25%
+                    else if (percent < 50) barColor = '#eab308'; // Gelb 25-50%
+                    
+                    return `<div class="stat-item">
+                        <div class="stat-name">${name} (50%)</div>
+                        <div class="stat-ratio">${data.confirmed}/${data.total} (${percent}%)</div>
+                        <div class="stat-bar-container">
+                            <div class="stat-bar" style="width: ${Math.min(percent, 100)}%; background-color: ${barColor};"></div>
+                        </div>
+                    </div>`;
+                }).join('');
+            
+            document.getElementById('stats100Container').innerHTML = html100 || '<p style="color:#999;">Keine Daten</p>';
+            document.getElementById('stats50Container').innerHTML = html50 || '<p style="color:#999;">Keine Daten</p>';
         }
         
         function updateNextWeek() {
