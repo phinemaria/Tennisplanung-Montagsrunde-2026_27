@@ -30,6 +30,99 @@
         }
         .header h1 { font-size: 28px; margin-bottom: 5px; }
         .sync-status { font-size: 14px; margin-top: 10px; }
+        
+        .next-week-box {
+            background: #e0f2fe;
+            border: 2px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 14px;
+            font-weight: bold;
+            color: #0369a1;
+        }
+        .next-week-content {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .print-btn {
+            background: white;
+            border: 1px solid #0ea5e9;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .print-btn:hover {
+            background: #0ea5e9;
+            color: white;
+        }
+        
+        .stats-box {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 15px 0;
+        }
+        .stats-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #0369a1;
+            margin-bottom: 10px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 8px;
+        }
+        .stat-item {
+            background: white;
+            border: 1px solid #cffafe;
+            border-radius: 4px;
+            padding: 6px;
+            text-align: center;
+            font-size: 11px;
+        }
+        .stat-name { font-weight: bold; color: #0369a1; }
+        .stat-ratio { color: #666; font-size: 10px; margin-top: 2px; }
+        .stat-bar-container {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+        .stat-bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        /* Mobile Optimierung */
+        @media (max-width: 768px) {
+            body { padding: 8px; }
+            h1 { font-size: 18px; }
+            p { font-size: 12px; }
+            .weeks-grid { grid-template-columns: 1fr; }
+            .week-card { padding: 8px; }
+            .week-header { font-size: 11px; }
+            .player-row { grid-template-columns: 20px 1fr; gap: 3px; }
+            .player-name { font-size: 11px; }
+            .status-btn { font-size: 14px; padding: 2px; }
+            .stats-grid { grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); }
+            .stat-item { padding: 4px; font-size: 10px; }
+        }
+        
+        @media (max-width: 480px) {
+            .weeks-grid { grid-template-columns: 1fr; }
+            .next-week-box { font-size: 12px; padding: 8px; }
+            h1 { font-size: 16px; }
+        }
         .legend {
             display: flex;
             gap: 30px;
@@ -238,6 +331,20 @@
         <div class="header">
             <h1>🟡 Montagsrunde Tennisplanung</h1>
             <p>Saison 2026/2027 • Live mit Supabase</p>
+            
+            <div id="nextWeekBox" class="next-week-box">
+                <div class="next-week-content">
+                    <span id="nextWeekText">Lädt...</span>
+                    <button id="printBtn" class="print-btn" onclick="printNextWeek()" title="Nächste Woche drucken/PDF">🖨️</button>
+                </div>
+            </div>
+            
+            <div id="statsBox" class="stats-box">
+                <div class="stats-title">📊 Spieler-Statistik (Saison)</div>
+                <div id="statsContainer" class="stats-grid">
+                    Lädt...
+                </div>
+            </div>
             <div class="sync-status">
                 <span id="syncStatus">Lädt...</span>
                 <div class="visit-counter" id="visitCounter">Besuche: 0</div>
@@ -428,9 +535,164 @@
             }
         }
 
+        function calculateStats() {
+            const stats = {};
+            Object.keys(PLAYERS).forEach(player => {
+                stats[player] = { total: 0, confirmed: 0 };
+            });
+            
+            MONTH_ORDER.forEach(month => {
+                const weeks = currentData[month];
+                if (!weeks) return;
+                weeks.forEach(week => {
+                    Object.keys(PLAYERS).forEach(player => {
+                        if (week.availabilities[player]) {
+                            stats[player].total++;
+                            if (week.availabilities[player] === '🟡') {
+                                stats[player].confirmed++;
+                            }
+                        }
+                    });
+                });
+            });
+            
+            const html = Object.entries(stats)
+                .sort((a, b) => (b[1].confirmed / b[1].total || 0) - (a[1].confirmed / a[1].total || 0))
+                .map(([name, data]) => {
+                    const percent = data.total > 0 ? Math.round((data.confirmed / data.total) * 100) : 0;
+                    // Farbwahl basierend auf Quote
+                    let barColor = '#10b981'; // Grün >= 66%
+                    if (percent < 33) barColor = '#ef4444'; // Rot < 33%
+                    else if (percent < 66) barColor = '#eab308'; // Gelb 33-66%
+                    
+                    return `<div class="stat-item">
+                        <div class="stat-name">${name}</div>
+                        <div class="stat-ratio">${data.confirmed}/${data.total} (${percent}%)</div>
+                        <div class="stat-bar-container">
+                            <div class="stat-bar" style="width: ${percent}%; background-color: ${barColor};"></div>
+                        </div>
+                    </div>`;
+                }).join('');
+            
+            document.getElementById('statsContainer').innerHTML = html;
+        }
+        
+        function updateNextWeek() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            let nextWeek = null;
+            MONTH_ORDER.forEach(month => {
+                const weeks = currentData[month];
+                if (!weeks) return;
+                weeks.forEach(week => {
+                    const [day, month, year] = week.monday.split('.').map(Number);
+                    const weekDate = new Date(year, month - 1, day);
+                    if (weekDate >= today && !nextWeek) {
+                        nextWeek = week;
+                    }
+                });
+            });
+            
+            if (nextWeek) {
+                const confirmedPlayers = Object.entries(nextWeek.availabilities)
+                    .filter(([_, status]) => status === '🟡')
+                    .map(([name, _]) => name);
+                if (nextWeek.additionalPlayerStatus === '🟡' && nextWeek.additionalPlayer) {
+                    confirmedPlayers.push(nextWeek.additionalPlayer);
+                }
+                const confirmCount = confirmedPlayers.length;
+                const gameType = confirmCount >= 4 ? 'Doppel' : confirmCount >= 2 ? 'Einzel' : '−';
+                const playerList = confirmedPlayers.length > 0 ? ` (${confirmedPlayers.join(', ')})` : '';
+                document.getElementById('nextWeekText').innerHTML = 
+                    `📅 Nächste Woche: <strong>${nextWeek.monday}</strong> (${nextWeek.kw}) • ${confirmCount}/6+ bestätigt${playerList} → <strong>${gameType}</strong>`;
+            } else {
+                document.getElementById('nextWeekText').innerHTML = '✅ Saison beendet!';
+            }
+        }
+        
+        function printNextWeek() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            let nextWeek = null;
+            MONTH_ORDER.forEach(month => {
+                const weeks = currentData[month];
+                if (!weeks) return;
+                weeks.forEach(week => {
+                    const [day, month, year] = week.monday.split('.').map(Number);
+                    const weekDate = new Date(year, month - 1, day);
+                    if (weekDate >= today && !nextWeek) {
+                        nextWeek = week;
+                    }
+                });
+            });
+            
+            if (!nextWeek) {
+                alert('Keine kommende Woche gefunden');
+                return;
+            }
+            
+            const confirmedPlayers = Object.entries(nextWeek.availabilities)
+                .filter(([_, status]) => status === '🟡')
+                .map(([name, _]) => name);
+            if (nextWeek.additionalPlayerStatus === '🟡' && nextWeek.additionalPlayer) {
+                confirmedPlayers.push(nextWeek.additionalPlayer);
+            }
+            const confirmCount = confirmedPlayers.length;
+            const gameType = confirmCount >= 4 ? 'Doppel' : confirmCount >= 2 ? 'Einzel' : '−';
+            const playerList = confirmedPlayers.length > 0 ? `, ${confirmedPlayers.join(', ')}` : '';
+            
+            const playerRows = Object.entries(nextWeek.availabilities)
+                .map(([name, status]) => `<tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">${name}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; font-size: 18px;">${status}</td>
+                </tr>`).join('');
+            
+            const printWindow = window.open('', '', 'width=600,height=800');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Montagsrunde - ${nextWeek.kw}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; background: white; }
+                        h1 { color: #0369a1; margin-bottom: 10px; }
+                        .info { background: #e0f2fe; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+                        .info-line { margin: 8px 0; font-size: 16px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th { background: #0ea5e9; color: white; padding: 10px; text-align: left; }
+                        @media print { body { padding: 0; } }
+                    </style>
+                </head>
+                <body>
+                    <h1>🟡 Montagsrunde Tennisplanung</h1>
+                    <div class="info">
+                        <div class="info-line"><strong>Woche:</strong> ${nextWeek.kw}</div>
+                        <div class="info-line"><strong>Datum:</strong> ${nextWeek.monday}</div>
+                        <div class="info-line"><strong>Bestätigt:</strong> ${confirmCount} Spieler${playerList}</div>
+                        <div class="info-line"><strong>Spieltyp:</strong> <strong>${gameType}</strong></div>
+                        ${nextWeek.remarks ? `<div class="info-line"><strong>Bemerkung:</strong> ${nextWeek.remarks}</div>` : ''}
+                    </div>
+                    <table>
+                        <thead><tr><th>Spieler</th><th>Status</th></tr></thead>
+                        <tbody>
+                            ${playerRows}
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 30px; color: #999; font-size: 12px;">Druckdatum: ${new Date().toLocaleDateString('de-DE')}</p>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            setTimeout(() => printWindow.print(), 250);
+        }
+        
         function renderAll() {
             renderLogs();
             renderMonths();
+            calculateStats();
+            updateNextWeek();
             
             setTimeout(() => {
                 document.querySelectorAll('.remarks-field input').forEach(input => {
