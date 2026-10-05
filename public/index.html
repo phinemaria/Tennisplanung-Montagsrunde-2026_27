@@ -335,7 +335,7 @@
             <div id="nextWeekBox" class="next-week-box">
                 <div class="next-week-content">
                     <span id="nextWeekText">Lädt...</span>
-                    <button id="printBtn" class="print-btn" onclick="printNextWeek()" title="Nächste Woche drucken/PDF">🖨️</button>
+                    <button id="printBtn" class="print-btn" onclick="printNextWeek()" title="Nächstes Match drucken/PDF">🖨️</button>
                 </div>
             </div>
             
@@ -638,7 +638,7 @@
                 const gameType = confirmCount >= 4 ? 'Doppel' : confirmCount >= 2 ? 'Einzel' : '−';
                 const playerList = confirmedPlayers.length > 0 ? ` (${confirmedPlayers.join(', ')})` : '';
                 document.getElementById('nextWeekText').innerHTML = 
-                    `📅 Nächste Woche: <strong>${nextWeek.monday}</strong> (${nextWeek.kw}) • ${confirmCount}/6+ bestätigt${playerList} → <strong>${gameType}</strong>`;
+                    `📅 Nächstes Match: <strong>${nextWeek.monday}</strong> (${nextWeek.kw}) • ${confirmCount}/6+ bestätigt${playerList} → <strong>${gameType}</strong>`;
             } else {
                 document.getElementById('nextWeekText').innerHTML = '✅ Saison beendet!';
             }
