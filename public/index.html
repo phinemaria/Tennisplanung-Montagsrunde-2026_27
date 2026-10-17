@@ -336,6 +336,7 @@
                 <div class="next-week-content">
                     <span id="nextWeekText">Lädt...</span>
                     <button id="printBtn" class="print-btn" onclick="printNextWeek()" title="Nächstes Match drucken/PDF">🖨️</button>
+                    <button id="pastBtn" class="print-btn" onclick="togglePastWeeks()" title="Vergangene Wochen ein-/ausblenden">👁️ Vergangene</button>
                 </div>
             </div>
             
@@ -387,6 +388,12 @@
         const PLAYERS = { AB: "AB", RP: "RP", DG: "DG", UW: "UW", DR: "DR" };
         const MONTH_ORDER = ['Oktober', 'November', 'Dezember', 'Januar', 'Februar', 'März', 'April'];
         let currentData = null;
+        let showPastWeeks = false;
+
+        function togglePastWeeks() {
+            showPastWeeks = !showPastWeeks;
+            renderMonths();
+        }
         let logs = [];
 
         async function initSupabase() {
@@ -779,10 +786,9 @@
                     const daysAgo = Math.floor((today - dateObj) / (1000 * 60 * 60 * 24));
                     
                     let weekClasses = 'week-card';
-                    if (daysAgo > 28) {
-                        weekClasses += ' hidden'; // älter als 4 Wochen: ausblenden
-                    } else if (daysAgo >= 0) {
-                        weekClasses += ' expired'; // 0-28 Tage alt: grau
+                    if (daysAgo >= 0) {
+                        weekClasses += ' expired'; // vergangene Woche: grau
+                        if (!showPastWeeks) weekClasses += ' hidden'; // standardmäßig ausgeblendet
                     }
                     
                     html += `<div class="${weekClasses}">
