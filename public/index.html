@@ -509,28 +509,45 @@
             .catch(err => console.error('Visit error:', err));
         }
 
+        const SB_TABLE = 'tennis_data';
+        let dataLoaded = false;
+
+        async function sbRequest(method, pathQuery, body) {
+            const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
+            if (method === 'POST') headers['Prefer'] = 'return=representation';
+            const r = await fetch(`${SUPABASE_URL}/rest/v1/${pathQuery}`, {
+                method: method,
+                headers: headers,
+                body: body ? JSON.stringify(body) : undefined
+            });
+            if (!r.ok) throw new Error(`${r.status}: ${await r.text()}`);
+            return r.status === 204 ? null : r.json();
+        }
+
+        async function sbSave(rowId, payload) {
+            if (!dataLoaded) {
+                document.getElementById('syncStatus').textContent = 'Nicht gespeichert – bitte Seite neu laden';
+                return new Error('Daten nicht geladen');
+            }
+            try {
+                await sbRequest('PATCH', `${SB_TABLE}?id=eq.${rowId}`, { data: payload, updated_at: new Date().toISOString() });
+                return null;
+            } catch (e) {
+                document.getElementById('syncStatus').textContent = 'Speichern fehlgeschlagen: ' + e.message;
+                return e;
+            }
+        }
+
         async function loadData() {
             try {
                 document.getElementById('syncStatus').textContent = 'Lädt...';
-                await initSupabase();
                 
-                const { data, error } = await supabaseClient
-                    .from('tennis_data')
-                    .select('*')
-                    .order('id', { ascending: true })
-                    .limit(1);
-
-                if (error) throw error;
+                const data = await sbRequest('GET', `${SB_TABLE}?select=*&order=id.asc&limit=1`);
 
                 if (!data || data.length === 0) {
                     currentData = getInitialData();
-                    const { insertError } = await supabaseClient
-                        .from('tennis_data')
-                        .insert([{ 
-                            data: currentData, 
-                            updated_at: new Date().toISOString() 
-                        }]);
-                    if (insertError) throw insertError;
+                    const inserted = await sbRequest('POST', SB_TABLE, [{ data: currentData, updated_at: new Date().toISOString() }]);
+                    window.currentRowId = inserted[0].id;
                     logs = [];
                 } else {
                     currentData = data[0].data;
@@ -538,6 +555,7 @@
                     window.currentRowId = data[0].id;
                 }
                 
+                dataLoaded = true;
                 renderAll();
                 trackVisit();
                 document.getElementById('syncStatus').textContent = 'Synchronisiert ✓';
@@ -876,13 +894,7 @@
             
             try {
                 const rowId = window.currentRowId || 1;
-                const { error } = await supabaseClient
-                    .from('tennis_data')
-                    .update({ 
-                        data: currentData,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', rowId);
+                const error = await sbSave(rowId, currentData);
                 
                 if (error) {
                     console.error('Error:', error);
@@ -898,13 +910,7 @@
             
             try {
                 const rowId = window.currentRowId || 1;
-                const { error } = await supabaseClient
-                    .from('tennis_data')
-                    .update({ 
-                        data: currentData,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', rowId);
+                const error = await sbSave(rowId, currentData);
                 
                 if (error) console.error('Save error:', error);
             } catch (error) {
@@ -933,13 +939,7 @@
             
             try {
                 const rowId = window.currentRowId || 1;
-                const { error } = await supabaseClient
-                    .from('tennis_data')
-                    .update({ 
-                        data: currentData,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', rowId);
+                const error = await sbSave(rowId, currentData);
                 
                 if (error) console.error('Save error:', error);
             } catch (error) {
@@ -967,13 +967,7 @@
             
             try {
                 const rowId = window.currentRowId || 1;
-                const { error } = await supabaseClient
-                    .from('tennis_data')
-                    .update({ 
-                        data: currentData,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', rowId);
+                const error = await sbSave(rowId, currentData);
                 
                 if (error) console.error('Toggle error:', error);
             } catch (error) {
