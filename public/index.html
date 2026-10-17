@@ -48,11 +48,18 @@
             justify-content: space-between;
         }
         .print-btn {
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            font-size: 18px;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 38px;
             background: white;
             border: 1px solid #0ea5e9;
-            border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 14px;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -335,8 +342,8 @@
             <div id="nextWeekBox" class="next-week-box">
                 <div class="next-week-content">
                     <span id="nextWeekText">Lädt...</span>
-                    <button id="printBtn" class="print-btn" onclick="printNextWeek()" title="Nächstes Match drucken/PDF">🖨️</button>
-                    <button id="pastBtn" class="print-btn" onclick="togglePastWeeks()" title="Vergangene Wochen ein-/ausblenden">👁️ Vergangene</button>
+                    <button id="printBtn" class="print-btn" onclick="printNextWeek()" title="Drucken">🖨️</button>
+                    <button id="pastBtn" class="print-btn" onclick="togglePastWeeks()" title="historische Spieltage">🕘</button>
                 </div>
             </div>
             
@@ -672,73 +679,67 @@
         function printNextWeek() {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            
-            let nextWeek = null;
+
+            const upcoming = [];
             MONTH_ORDER.forEach(month => {
-                const weeks = currentData[month];
-                if (!weeks) return;
-                weeks.forEach(week => {
-                    const [day, month, year] = week.monday.split('.').map(Number);
-                    const weekDate = new Date(year, month - 1, day);
-                    if (weekDate >= today && !nextWeek) {
-                        nextWeek = week;
-                    }
+                (currentData[month] || []).forEach(week => {
+                    const [day, mm, yyyy] = week.monday.split('.').map(Number);
+                    if (new Date(yyyy, mm - 1, day) >= today) upcoming.push(week);
                 });
             });
-            
-            if (!nextWeek) {
-                alert('Keine kommende Woche gefunden');
+
+            if (upcoming.length === 0) {
+                alert('Keine kommenden Spieltage gefunden');
                 return;
             }
-            
-            const confirmedPlayers = Object.entries(nextWeek.availabilities)
-                .filter(([_, status]) => status === '🟡')
-                .map(([name, _]) => name);
-            if (nextWeek.additionalPlayerStatus === '🟡' && nextWeek.additionalPlayer) {
-                confirmedPlayers.push(nextWeek.additionalPlayer);
-            }
-            const confirmCount = confirmedPlayers.length;
-            const gameType = confirmCount >= 4 ? 'Doppel' : confirmCount >= 2 ? 'Einzel' : '−';
-            const playerList = confirmedPlayers.length > 0 ? `, ${confirmedPlayers.join(', ')}` : '';
-            
-            const playerRows = Object.entries(nextWeek.availabilities)
-                .map(([name, status]) => `<tr>
-                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">${name}</td>
-                    <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; font-size: 18px;">${status}</td>
-                </tr>`).join('');
-            
+
+            const blocks = upcoming.map(week => {
+                const confirmed = Object.entries(week.availabilities)
+                    .filter(([_, st]) => st === '🟡').map(([name]) => name);
+                if (week.additionalPlayerStatus === '🟡' && week.additionalPlayer) {
+                    confirmed.push(week.additionalPlayer);
+                }
+                const count = confirmed.length;
+                const gameType = count >= 4 ? 'Doppel' : count >= 2 ? 'Einzel' : '−';
+                const rows = Object.entries(week.availabilities)
+                    .map(([name, st]) => `<tr><td>${name}</td><td class="st">${st}</td></tr>`).join('');
+                return `<section class="page">
+                    <h2>${week.kw} – ${week.monday}</h2>
+                    <div class="info">
+                        <div><strong>Bestätigt:</strong> ${count} Spieler${confirmed.length ? ', ' + confirmed.join(', ') : ''}</div>
+                        <div><strong>Spieltyp:</strong> <strong>${gameType}</strong></div>
+                        ${week.remarks ? `<div><strong>Bemerkung:</strong> ${week.remarks}</div>` : ''}
+                    </div>
+                    <table>
+                        <thead><tr><th>Spieler</th><th>Status</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </section>`;
+            }).join('');
+
             const printWindow = window.open('', '', 'width=600,height=800');
-            printWindow.document.write(`
-                <!DOCTYPE html>
+            printWindow.document.write(`<!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Montagsrunde - ${nextWeek.kw}</title>
+                    <title>Montagsrunde – kommende Spieltage</title>
                     <style>
                         body { font-family: Arial, sans-serif; padding: 20px; background: white; }
-                        h1 { color: #0369a1; margin-bottom: 10px; }
-                        .info { background: #e0f2fe; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-                        .info-line { margin: 8px 0; font-size: 16px; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                        th { background: #0ea5e9; color: white; padding: 10px; text-align: left; }
+                        h1 { color: #0369a1; margin-bottom: 15px; }
+                        .page { page-break-after: always; margin-bottom: 30px; }
+                        .page:last-child { page-break-after: auto; }
+                        h2 { color: #0369a1; font-size: 18px; margin: 10px 0; }
+                        .info { background: #e0f2fe; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 15px; line-height: 1.7; }
+                        table { width: 100%; border-collapse: collapse; }
+                        th { background: #0ea5e9; color: white; padding: 8px; text-align: left; }
+                        td { padding: 8px; border-bottom: 1px solid #ddd; }
+                        td.st { text-align: center; font-size: 18px; }
                         @media print { body { padding: 0; } }
                     </style>
                 </head>
                 <body>
                     <h1>🟡 Montagsrunde Tennisplanung</h1>
-                    <div class="info">
-                        <div class="info-line"><strong>Woche:</strong> ${nextWeek.kw}</div>
-                        <div class="info-line"><strong>Datum:</strong> ${nextWeek.monday}</div>
-                        <div class="info-line"><strong>Bestätigt:</strong> ${confirmCount} Spieler${playerList}</div>
-                        <div class="info-line"><strong>Spieltyp:</strong> <strong>${gameType}</strong></div>
-                        ${nextWeek.remarks ? `<div class="info-line"><strong>Bemerkung:</strong> ${nextWeek.remarks}</div>` : ''}
-                    </div>
-                    <table>
-                        <thead><tr><th>Spieler</th><th>Status</th></tr></thead>
-                        <tbody>
-                            ${playerRows}
-                        </tbody>
-                    </table>
-                    <p style="margin-top: 30px; color: #999; font-size: 12px;">Druckdatum: ${new Date().toLocaleDateString('de-DE')}</p>
+                    ${blocks}
+                    <p style="color:#999;font-size:12px;">Druckdatum: ${new Date().toLocaleDateString('de-DE')}</p>
                 </body>
                 </html>
             `);
