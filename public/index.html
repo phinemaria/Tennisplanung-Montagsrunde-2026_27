@@ -702,7 +702,7 @@
             }
 
             const players = Object.keys(PLAYERS);
-            const mark = st => st === '🟡' ? '✔' : '–';
+            const mark = st => st === '🟡' ? '🟡' : '❌';
 
             const rows = upcoming.map(week => {
                 const playerCells = players
@@ -748,7 +748,7 @@
                 </head>
                 <body>
                     <h1>Montagsrunde Tennisplanung – kommende Spieltage</h1>
-                    <div class="legend">✔ = verfügbar · – = nicht verfügbar · Stand: ${new Date().toLocaleDateString('de-DE')}</div>
+                    <div class="legend">🟡 = verfügbar · ❌ = nicht verfügbar · Stand: ${new Date().toLocaleDateString('de-DE')}</div>
                     <table>
                         <thead>
                             <tr>
