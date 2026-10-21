@@ -701,53 +701,63 @@
                 return;
             }
 
-            const blocks = upcoming.map(week => {
-                const confirmed = Object.entries(week.availabilities)
-                    .filter(([_, st]) => st === '🟡').map(([name]) => name);
-                if (week.additionalPlayerStatus === '🟡' && week.additionalPlayer) {
-                    confirmed.push(week.additionalPlayer);
-                }
-                const count = confirmed.length;
-                const gameType = count >= 4 ? 'Doppel' : count >= 2 ? 'Einzel' : '−';
-                const rows = Object.entries(week.availabilities)
-                    .map(([name, st]) => `<tr><td>${name}</td><td class="st">${st}</td></tr>`).join('');
-                return `<section class="page">
-                    <h2>${week.kw} – ${week.monday}</h2>
-                    <div class="info">
-                        <div><strong>Bestätigt:</strong> ${count} Spieler${confirmed.length ? ', ' + confirmed.join(', ') : ''}</div>
-                        <div><strong>Spieltyp:</strong> <strong>${gameType}</strong></div>
-                        ${week.remarks ? `<div><strong>Bemerkung:</strong> ${week.remarks}</div>` : ''}
-                    </div>
-                    <table>
-                        <thead><tr><th>Spieler</th><th>Status</th></tr></thead>
-                        <tbody>${rows}</tbody>
-                    </table>
-                </section>`;
+            const players = Object.keys(PLAYERS);
+            const mark = st => st === '🟡' ? '✔' : '–';
+
+            const rows = upcoming.map(week => {
+                const playerCells = players
+                    .map(p => `<td class="c">${mark(week.availabilities[p])}</td>`).join('');
+                const addConfirmed = week.additionalPlayerStatus === '🟡' && !!week.additionalPlayer;
+                const addCell = week.additionalPlayer
+                    ? `${week.additionalPlayer} ${mark(week.additionalPlayerStatus)}` : '–';
+                const count = players.filter(p => week.availabilities[p] === '🟡').length + (addConfirmed ? 1 : 0);
+                const type = count >= 4 ? 'Doppel' : count >= 2 ? 'Einzel' : '–';
+                return `<tr>
+                    <td class="kw">${week.kw}</td>
+                    <td>${week.monday}</td>
+                    ${playerCells}
+                    <td>${addCell}</td>
+                    <td class="c">${count}</td>
+                    <td>${type}</td>
+                    <td class="rem">${week.remarks || ''}</td>
+                </tr>`;
             }).join('');
 
-            const printWindow = window.open('', '', 'width=600,height=800');
+            const playerHeads = players.map(p => `<th class="c">${p}</th>`).join('');
+
+            const printWindow = window.open('', '', 'width=900,height=800');
             printWindow.document.write(`<!DOCTYPE html>
                 <html>
                 <head>
                     <title>Montagsrunde – kommende Spieltage</title>
                     <style>
-                        body { font-family: Arial, sans-serif; padding: 20px; background: white; }
-                        h1 { color: #0369a1; margin-bottom: 15px; }
-                        .page { page-break-after: always; margin-bottom: 30px; }
-                        .page:last-child { page-break-after: auto; }
-                        h2 { color: #0369a1; font-size: 18px; margin: 10px 0; }
-                        .info { background: #e0f2fe; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 15px; line-height: 1.7; }
-                        table { width: 100%; border-collapse: collapse; }
-                        th { background: #0ea5e9; color: white; padding: 8px; text-align: left; }
-                        td { padding: 8px; border-bottom: 1px solid #ddd; }
-                        td.st { text-align: center; font-size: 18px; }
-                        @media print { body { padding: 0; } }
+                        @page { size: A4; margin: 10mm; }
+                        body { font-family: Arial, sans-serif; margin: 0; color: #111; }
+                        h1 { color: #0369a1; font-size: 16px; margin: 0 0 4px 0; }
+                        .legend { font-size: 10px; color: #555; margin-bottom: 6px; }
+                        table { width: 100%; border-collapse: collapse; font-size: 10px; }
+                        thead { display: table-header-group; }
+                        tr { page-break-inside: avoid; }
+                        th { background: #0ea5e9; color: white; padding: 3px 4px; text-align: left; }
+                        td { padding: 3px 4px; border-bottom: 1px solid #ddd; white-space: nowrap; }
+                        td.c, th.c { text-align: center; }
+                        td.kw { font-weight: bold; }
+                        td.rem { white-space: normal; font-style: italic; color: #b91c1c; }
+                        @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
                     </style>
                 </head>
                 <body>
-                    <h1>🟡 Montagsrunde Tennisplanung</h1>
-                    ${blocks}
-                    <p style="color:#999;font-size:12px;">Druckdatum: ${new Date().toLocaleDateString('de-DE')}</p>
+                    <h1>Montagsrunde Tennisplanung – kommende Spieltage</h1>
+                    <div class="legend">✔ = verfügbar · – = nicht verfügbar · Stand: ${new Date().toLocaleDateString('de-DE')}</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>KW</th><th>Datum</th>${playerHeads}<th>+ Zusatz</th>
+                                <th class="c">Anz.</th><th>Typ</th><th>Bemerkung</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
                 </body>
                 </html>
             `);
@@ -784,6 +794,14 @@
             document.getElementById('changelog').innerHTML = html || '<p style="color:#999;">Noch keine Änderungen</p>';
         }
 
+        function isPastWeek(week) {
+            const [day, mm, yyyy] = week.monday.split('.').map(Number);
+            const d = new Date(yyyy, mm - 1, day);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return d < today;
+        }
+
         function renderMonths() {
             if (!currentData) return;
             let html = '';
@@ -791,6 +809,9 @@
             MONTH_ORDER.forEach(month => {
                 const weeks = currentData[month];
                 if (!weeks) return;
+                // Monat nur zeigen, wenn mindestens ein Termin sichtbar ist
+                const hasVisible = showPastWeeks || weeks.some(w => !isPastWeek(w));
+                if (!hasVisible) return;
                 
                 html += `<div class="month-section">
                     <div class="month-title">${month}</div>
