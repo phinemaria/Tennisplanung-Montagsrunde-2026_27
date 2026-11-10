@@ -725,21 +725,22 @@
 
             const playerHeads = players.map(p => `<th class="c">${p}</th>`).join('');
 
-            const printWindow = window.open('', '', 'width=900,height=800');
+            const printWindow = window.open('', '', 'width=1100,height=800');
             printWindow.document.write(`<!DOCTYPE html>
                 <html>
                 <head>
                     <title>Montagsrunde – kommende Spieltage</title>
                     <style>
-                        @page { size: A4; margin: 10mm; }
-                        body { font-family: Arial, sans-serif; margin: 0; color: #111; }
-                        h1 { color: #0369a1; font-size: 16px; margin: 0 0 4px 0; }
-                        .legend { font-size: 10px; color: #555; margin-bottom: 6px; }
-                        table { width: 100%; border-collapse: collapse; font-size: 10px; }
-                        thead { display: table-header-group; }
-                        tr { page-break-inside: avoid; }
-                        th { background: #0ea5e9; color: white; padding: 3px 4px; text-align: left; }
-                        td { padding: 3px 4px; border-bottom: 1px solid #ddd; white-space: nowrap; }
+                        @page { size: A4 landscape; margin: 10mm; }
+                        html, body { margin: 0; padding: 0; background: white; }
+                        body { font-family: Arial, sans-serif; color: #111; }
+                        #page { width: 1047px; height: 710px; display: flex; align-items: center; justify-content: center; }
+                        #sheet { width: 1047px; font-size: 14px; }
+                        h1 { color: #0369a1; font-size: 1.5em; margin: 0 0 0.3em 0; text-align: center; }
+                        .legend { font-size: 0.85em; color: #555; margin-bottom: 0.6em; text-align: center; }
+                        table { width: 100%; border-collapse: collapse; font-size: 1em; }
+                        th { background: #0ea5e9; color: white; padding: 0.35em 0.5em; text-align: left; }
+                        td { padding: 0.35em 0.5em; border-bottom: 1px solid #ddd; white-space: nowrap; }
                         td.c, th.c { text-align: center; }
                         td.kw { font-weight: bold; }
                         td.rem { white-space: normal; font-style: italic; color: #b91c1c; }
@@ -747,22 +748,36 @@
                     </style>
                 </head>
                 <body>
-                    <h1>Montagsrunde Tennisplanung – kommende Spieltage</h1>
-                    <div class="legend">🟡 = verfügbar · ❌ = nicht verfügbar · Stand: ${new Date().toLocaleDateString('de-DE')}</div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>KW</th><th>Datum</th>${playerHeads}<th>+ Zusatz</th>
-                                <th class="c">Anz.</th><th>Typ</th><th>Bemerkung</th>
-                            </tr>
-                        </thead>
-                        <tbody>${rows}</tbody>
-                    </table>
+                    <div id="page">
+                    <div id="sheet">
+                        <h1>Montagsrunde Tennisplanung – kommende Spieltage</h1>
+                        <div class="legend">🟡 = verfügbar · ❌ = nicht verfügbar · Stand: ${new Date().toLocaleDateString('de-DE')}</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>KW</th><th>Datum</th>${playerHeads}<th>+ Zusatz</th>
+                                    <th class="c">Anz.</th><th>Typ</th><th>Bemerkung</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                    </div>
                 </body>
                 </html>
             `);
             printWindow.document.close();
-            setTimeout(() => printWindow.print(), 250);
+
+            // Schrift so groß wie möglich, aber alles auf eine Seite (A4 quer)
+            const doc = printWindow.document;
+            const sheet = doc.getElementById('sheet');
+            const base = 14;
+            sheet.style.fontSize = base + 'px';
+            const h = sheet.offsetHeight;
+            const k = Math.min(680 / h, 1.8);
+            sheet.style.fontSize = (base * k) + 'px';
+
+            setTimeout(() => printWindow.print(), 300);
         }
         
         function renderAll() {
